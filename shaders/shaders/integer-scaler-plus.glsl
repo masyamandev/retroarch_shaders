@@ -100,7 +100,7 @@ void main()
 
     vec2 centerOffset = floor(OutputSize.xy / finalScale - InputSize.xy) * 0.5 / TextureSize.xy;
 
-    vec2 subpixelBlur = vec2(1.0 / OutputSize.x, 0.0) / FIX / 3.0 * min(stretch_algo, 1.0) * ((stretch_algo == 2.0) ? -1.0 : 1.0);
+    vec2 subpixelBlur = vec2(1.0 / (TextureSize.x * finalScale.x), 0.0) / 3.0 * min(stretch_algo, 1.0) * ((stretch_algo == 2.0) ? -1.0 : 1.0);
 
     vec2 ScanlineWidthAdjusted = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) / finalScale;
     float scanlineDarkArea = ScanlineWidthAdjusted.x + ScanlineWidthAdjusted.y - ScanlineWidthAdjusted.x * ScanlineWidthAdjusted.y;
@@ -181,7 +181,7 @@ vec4 pixel(sampler2D tex, vec2 pos)
 
     // Debug: draw 1 pixel lines or dot matrix
 //    vec2 coords = pos.xy * TextureSize.xy;
-//    vec2 dither = fract(vec2(coords.x / 32.0, coords.y / 32.0));
+//    vec2 dither = fract(vec2(coords.x / 2.0, coords.y / 32.0));
 //
 //    vec4 color = ((dither.x - 0.5) * (dither.y - 0.5) >= 0.0) ?
 //        vec4(1.0, 1.0, 1.0, 1.0) :
@@ -283,6 +283,7 @@ void main()
 
 //    vec3 color = pixel(Source, vTexCoord + subpixelBlur * 3.0 * 8.0).rgb;
 
+//    vec3 color = vec3(color3.r, color5.g, color7.b);
 
 //     if (experiments == 4.0) {
 //         color = (color0.rgb + color1.rgb + color2.rgb + color3.rgb + color4.rgb + color5.rgb + color6.rgb + color7.rgb + color8.rgb + color9.rgb + colorA.rgb) / 11.0;
