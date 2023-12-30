@@ -85,8 +85,6 @@ void main()
     gl_Position = MVPMatrix * VertexCoord;
 
     // Calculate constants, same for the whole screen
-    vec2 FIX = TextureSize.xy / InputSize.xy;
-
     vec2 scale1x = OutputSize.xy / InputSize.xy;
     vec2 intScaleBase = floor(scale1x);
     float scaleBaseY = min(intScaleBase.y, floor(scale1x.x * aspect_y / aspect_x / max_shrink_x));
@@ -100,7 +98,8 @@ void main()
 
     vec2 centerOffset = floor(OutputSize.xy / finalScale - InputSize.xy) * 0.5 / TextureSize.xy;
 
-    vec2 subpixelBlur = vec2(1.0 / (TextureSize.x * finalScale.x), 0.0) / 3.0 * min(stretch_algo, 1.0) * ((stretch_algo == 2.0) ? -1.0 : 1.0);
+    float subpixelDirection = min(stretch_algo, 1.0) * ((stretch_algo == 2.0) ? -1.0 : 1.0) * (fract(finalScale.x) == 0.0 ? 0.0 : 1.0);
+    vec2 subpixelBlur = vec2(1.0 / (TextureSize.x * finalScale.x), 0.0) / 3.0 * subpixelDirection;
 
     vec2 ScanlineWidthAdjusted = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) / finalScale;
     float scanlineDarkArea = ScanlineWidthAdjusted.x + ScanlineWidthAdjusted.y - ScanlineWidthAdjusted.x * ScanlineWidthAdjusted.y;
