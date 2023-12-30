@@ -3,11 +3,12 @@
 // good place for credits/license
 
 #pragma parameter stretch_algo "Stretch algo: 0:Near,1:RGB,2:BGR,3:Line,4:Frame" 1.0 0.0 4.0 1.0
-#pragma parameter scanlines_brightness "Scanlines brightness" 0.9 0.5 1.0 0.01
+#pragma parameter scanlines_brightness "Scanlines brightness" 0.85 0.5 1.0 0.01
 #pragma parameter scanlines_width_y "Scanlines horizontal thickness" 0.3 0.0 0.5 0.1
 #pragma parameter scanlines_width_x "Scanlines vertical thickness" 0.0 0.0 0.5 0.1
-#pragma parameter max_shrink_x "Max shrink X" 0.8 0.5 1.0 0.05
-#pragma parameter max_stretch_x "Max stretch X" 1.25 1.0 1.5 0.05
+#pragma parameter max_shrink_x "Max shrink X to fit screen width" 0.8 0.5 1.0 0.05
+#pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
+#pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
 #pragma parameter aspect_x "Pixel Aspect Ratio X" 5.0 1.0 256. 1.0
 #pragma parameter aspect_y "Pixel Aspect Ratio Y" 5.0 1.0 256. 1.0
 #pragma parameter offscreen_texture "Offscreen texture pattern" 1.0 0.0 3.0 1.0
@@ -63,6 +64,7 @@ uniform COMPAT_PRECISION float aspect_y;
 uniform COMPAT_PRECISION float stretch_algo;
 uniform COMPAT_PRECISION float max_shrink_x;
 uniform COMPAT_PRECISION float max_stretch_x;
+uniform COMPAT_PRECISION float int_scale_shrink_x;
 uniform COMPAT_PRECISION float scanlines_brightness;
 uniform COMPAT_PRECISION float scanlines_width_x;
 uniform COMPAT_PRECISION float scanlines_width_y;
@@ -72,7 +74,8 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define stretch_algo 1.0
 #define max_shrink_x 0.8
 #define max_stretch_x 1.25
-#define scanlines_brightness 0.9
+#define int_scale_shrink_x 0.9
+#define scanlines_brightness 0.85
 #define scanlines_width_x 0.0
 #define scanlines_width_y 0.3
 #endif
@@ -89,12 +92,15 @@ void main()
     float scaleBaseY = min(intScaleBase.y, floor(scale1x.x * aspect_y / aspect_x / max_shrink_x));
     vec2 scaleDesired = vec2(aspect_x / aspect_y * scaleBaseY, scaleBaseY);
     vec2 scaleFullWidth = vec2(scale1x.x, scaleBaseY);
+    if (floor(scaleFullWidth.x) / scaleFullWidth.x >= int_scale_shrink_x) {
+        scaleFullWidth = vec2(floor(scaleFullWidth.x), scaleBaseY);
+    }
     vec2 finalScale = (scaleDesired.x * max_stretch_x >= scaleFullWidth.x) ? scaleFullWidth : scaleDesired;
     vec2 textureScale = 1.00001 * scale1x / finalScale;
 
-    vec2 centerOffset = (OutputSize.xy / finalScale - InputSize.xy) / InputSize.xy * 0.5 / FIX;
+    vec2 centerOffset = floor(OutputSize.xy / finalScale - InputSize.xy) * 0.5 / TextureSize.xy;
 
-    vec2 subpixelBlur = vec2(1.0 / OutputSize.x, 0.0) / FIX * 0.33333 * min(stretch_algo, 1.0) * ((stretch_algo == 2.0) ? -1.0 : 1.0);
+    vec2 subpixelBlur = vec2(1.0 / OutputSize.x, 0.0) / FIX / 3.0 * min(stretch_algo, 1.0) * ((stretch_algo == 2.0) ? -1.0 : 1.0);
 
     vec2 ScanlineWidthAdjusted = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) / finalScale;
     float scanlineDarkArea = ScanlineWidthAdjusted.x + ScanlineWidthAdjusted.y - ScanlineWidthAdjusted.x * ScanlineWidthAdjusted.y;
@@ -172,6 +178,15 @@ vec4 pixel(sampler2D tex, vec2 pos)
     float brightness = (fract(0.99999 - TextureSize.y * pos.y) < ScanlineWidth.y || fract(0.99999 - TextureSize.x * pos.x) < ScanlineWidth.x) ? ScanlineBrightness : 1.0;
     vec4 pix = COMPAT_TEXTURE(tex, pos);
 	return vec4(pix.rgb * brightness, pix.a);
+
+    // Debug: draw 1 pixel lines or dot matrix
+//    vec2 coords = pos.xy * TextureSize.xy;
+//    vec2 dither = fract(vec2(coords.x / 32.0, coords.y / 32.0));
+//
+//    vec4 color = ((dither.x - 0.5) * (dither.y - 0.5) >= 0.0) ?
+//        vec4(1.0, 1.0, 1.0, 1.0) :
+//        vec4(0.0, 0.0, 0.0, 1.0);
+//    return color;
 }
 
 vec3 offScreenTexture(vec2 pos)
@@ -254,6 +269,20 @@ void main()
             color2.g + color3.g + color4.g + color5.g + color6.g + color7.g + color8.g,
             color4.b + color5.b + color6.b + color7.b + color8.b + color9.b + colorA.b
         ) / 7.0;
+
+//    vec3 color = vec3(0.0, 0.0, 0.0);
+//    for (int i = -8; i <= 8; i++) {
+//        vec2 offset = subpixelBlur * float(i) / 8.0;
+//        color += vec3(
+//            pixel(Source, vTexCoord + offset - subpixelBlur * 1.0).r,
+//            pixel(Source, vTexCoord + offset - subpixelBlur * 0.0).g,
+//            pixel(Source, vTexCoord + offset + subpixelBlur * 1.0).b
+//        );
+//    }
+//    color = color / 17.0;
+
+//    vec3 color = pixel(Source, vTexCoord + subpixelBlur * 3.0 * 8.0).rgb;
+
 
 //     if (experiments == 4.0) {
 //         color = (color0.rgb + color1.rgb + color2.rgb + color3.rgb + color4.rgb + color5.rgb + color6.rgb + color7.rgb + color8.rgb + color9.rgb + colorA.rgb) / 11.0;
