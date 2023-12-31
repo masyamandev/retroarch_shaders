@@ -3,9 +3,12 @@
 // good place for credits/license
 
 #pragma parameter stretch_algo "Stretch algo: 0:Near,1:RGB,2:BGR,3:Line,4:Frame" 1.0 0.0 4.0 1.0
-#pragma parameter scanlines_brightness "Scanlines brightness" 0.85 0.5 1.0 0.01
+#pragma parameter scanlines_brightness "Scanlines brightness" 0.85 0.0 1.0 0.01
 #pragma parameter scanlines_width_y "Scanlines horizontal thickness" 0.3 0.0 0.5 0.1
 #pragma parameter scanlines_width_x "Scanlines vertical thickness" 0.0 0.0 0.5 0.1
+#pragma parameter scanlines_color_r "Scanlines Color Red" 0.0 0.0 1.0 0.01
+#pragma parameter scanlines_color_g "Scanlines Color Green" 0.0 0.0 1.0 0.01
+#pragma parameter scanlines_color_b "Scanlines Color Blue" 0.0 0.0 1.0 0.01
 #pragma parameter max_shrink_x "Max shrink X to fit screen width" 0.8 0.5 1.0 0.05
 #pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
 #pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
@@ -101,11 +104,11 @@ void main()
     float subpixelDirection = min(stretch_algo, 1.0) * ((stretch_algo == 2.0) ? -1.0 : 1.0) * (fract(finalScale.x) == 0.0 ? 0.0 : 1.0);
     vec2 subpixelBlur = vec2(1.0 / (TextureSize.x * finalScale.x), 0.0) / 3.0 * subpixelDirection;
 
-    vec2 ScanlineWidthAdjusted = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) / finalScale;
-    float scanlineDarkArea = ScanlineWidthAdjusted.x + ScanlineWidthAdjusted.y - ScanlineWidthAdjusted.x * ScanlineWidthAdjusted.y;
+    vec2 scanlineWidthAdjusted = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) / finalScale;
+    float scanlineDarkArea = scanlineWidthAdjusted.x + scanlineWidthAdjusted.y - scanlineWidthAdjusted.x * scanlineWidthAdjusted.y;
     float scanlineBrightArea = 1.0 - scanlineDarkArea;
     float scanlineRemainingBrightness = max(scanlines_brightness - scanlineBrightArea, 0.0);
-    float ScanlineBrightnessAdjusted = scanlineRemainingBrightness / max(scanlineRemainingBrightness, scanlineDarkArea);
+    float scanlineBrightnessAdjusted = scanlineRemainingBrightness / max(scanlineRemainingBrightness, scanlineDarkArea);
 
     // Transformations
     vec2 finalPosition = TexCoord.xy * textureScale - centerOffset;
@@ -116,8 +119,8 @@ void main()
     SubpixelBlur = subpixelBlur;
     SubpixelMirrorEachLine = (stretch_algo == 3.0) ? 1.0 : 0.0;
     SubpixelMirrorEachFrame = (stretch_algo == 4.0) ? 1.0 : 0.0;
-    ScanlineWidth = ScanlineWidthAdjusted;
-    ScanlineBrightness = ScanlineBrightnessAdjusted;
+    ScanlineWidth = scanlineWidthAdjusted;
+    ScanlineBrightness = scanlineBrightnessAdjusted;
 }
 
 #elif defined(FRAGMENT)
@@ -160,8 +163,14 @@ COMPAT_VARYING float ScanlineBrightness;
 
 #ifdef PARAMETER_UNIFORM
 uniform COMPAT_PRECISION float offscreen_texture;
+uniform COMPAT_PRECISION float scanlines_color_r;
+uniform COMPAT_PRECISION float scanlines_color_g;
+uniform COMPAT_PRECISION float scanlines_color_b;
 #else
 #define offscreen_texture 1.0
+#define scanlines_color_r 0.0
+#define scanlines_color_g 0.0
+#define scanlines_color_b 0.0
 #endif
 
 // compatibility #defines
@@ -176,7 +185,7 @@ vec4 pixel(sampler2D tex, vec2 pos)
 {
     float brightness = (fract(0.99999 - TextureSize.y * pos.y) < ScanlineWidth.y || fract(0.99999 - TextureSize.x * pos.x) < ScanlineWidth.x) ? ScanlineBrightness : 1.0;
     vec4 pix = COMPAT_TEXTURE(tex, pos);
-	return vec4(pix.rgb * brightness, pix.a);
+	return vec4(pix.rgb * brightness + vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b) * (1.0 - brightness), pix.a);
 
     // Debug: draw 1 pixel lines or dot matrix
 //    vec2 coords = pos.xy * TextureSize.xy;
