@@ -14,7 +14,7 @@
 #pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
 #pragma parameter aspect_x "Pixel Aspect Ratio X" 5.0 1.0 256. 1.0
 #pragma parameter aspect_y "Pixel Aspect Ratio Y" 5.0 1.0 256. 1.0
-#pragma parameter offscreen_texture "Offscreen texture pattern" 1.0 0.0 3.0 1.0
+#pragma parameter offscreen_texture "Offscreen texture pattern" 1.0 0.0 7.0 1.0
 
 
 #if defined(VERTEX)
@@ -199,38 +199,43 @@ vec4 pixel(sampler2D tex, vec2 pos)
 
 vec3 offScreenTexture(vec2 pos)
 {
+    vec2 inPixelSize = 1.0 / TextureSize.xy;
+    vec2 outPixelSize = 1.0 / TextureScale * OutputSize * TextureSize.xy / InputSize.xy;
     float PI = 3.1415;
 
     float brightness = 0.0;
 
-    if (offscreen_texture <= 1.1) {
-        if (offscreen_texture <= 0.1) {
+    float pattern = offscreen_texture;
+
+    if (pattern > 3.5) { // 4 pixels of scanlines
+        vec2 expandScanlines = 4.0 * inPixelSize;
+        vec2 screenSize = InputSize.xy / TextureSize.xy;
+        if (pos.x >= -expandScanlines.x && pos.x <= screenSize.x + expandScanlines.x &&
+            pos.y >= -expandScanlines.y && pos.y <= screenSize.y + expandScanlines.y)
+        {
+            return vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b);
+        }
+        pattern -= 4.0;
+    }
+
+    if (pattern <= 1.1) {
+        if (pattern <= 0.1) { // Pattern 0
             brightness = 0.0;
-        } else {
-            vec2 transformed = pos.xy * TextureSize.xy * mat2(1.0, 1.0, 1.0, -1.0);
-            vec2 pattern = abs(cos(transformed.xy * PI / 2.0));
+        } else { // Pattern 1
+            vec2 transformed = pos.xy * outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 pattern = abs(cos(transformed.xy * PI * 0.1666666));
             brightness = pattern.x * pattern.y;
         }
     } else {
-        if (offscreen_texture <= 2.1) {
-            vec2 transformed = pos.xy * TextureSize.xy * mat2(1.0, 1.0, 1.0, -1.0);
-            vec2 pattern = 1.0 - abs(cos(transformed.xy * PI / 2.0));
+        if (pattern <= 2.1) { // Pattern 2
+            vec2 transformed = pos.xy * outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 pattern = 1.0 - abs(cos(transformed.xy * PI * 0.125));
             brightness = max(pattern.x, pattern.y);
-        } else {
-            vec2 transformed = pos.xy * TextureSize.xy;
-            brightness = abs(cos((transformed.y + sin(transformed.x * PI / 2.0) * PI * 0.125) * PI / 1.0));
+        } else { // Pattern 3
+            vec2 transformed = pos.xy * outPixelSize * 0.25;
+            brightness = abs(cos((transformed.y + sin(transformed.x * PI * 0.5) * PI * 0.125) * PI));
         }
     }
-//         vec2 transformed = pos.xy * TextureSize.xy;
-// //         brightness = max(cos((transformed.y + sin(transformed.x * PI / 2.0) * PI * 0.25) * PI / 1.0),
-// //             cos((transformed.y - sin(transformed.x * PI / 2.0) * PI * 0.25) * PI / 1.0));
-//         brightness = abs(cos((transformed.y + sin(transformed.x * PI / 2.0) * PI * 0.25) * PI / 1.0));
-//
-//         vec2 transformed = pos.xy * TextureSize.xy;
-//         vec2 pattern = abs(sin(transformed.xy * PI / 2.0));
-//         brightness = pattern.x * pattern.y;
-
-//     if (pos.x > 0.0) brightness = 0.0;
 
     return vec3(0.1, 0.1, 0.1) * brightness;
 }
