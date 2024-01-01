@@ -38,14 +38,14 @@
 COMPAT_ATTRIBUTE vec4 VertexCoord;
 COMPAT_ATTRIBUTE vec4 COLOR;
 COMPAT_ATTRIBUTE vec4 TexCoord;
-COMPAT_VARYING vec4 COL0;
 COMPAT_VARYING vec4 TEX0;
-COMPAT_VARYING vec2 TextureScale;
 COMPAT_VARYING vec2 SubpixelBlur;
 COMPAT_VARYING float SubpixelMirrorEachLine;
 COMPAT_VARYING float SubpixelMirrorEachFrame;
 COMPAT_VARYING vec2 ScanlineWidth;
 COMPAT_VARYING float ScanlineBrightness;
+COMPAT_VARYING vec2 InPixelSize;
+COMPAT_VARYING vec2 OutPixelSize;
 // out variables go here as COMPAT_VARYING whatever
 
 vec4 _oPosition1;
@@ -110,17 +110,21 @@ void main()
     float scanlineRemainingBrightness = max(scanlines_brightness - scanlineBrightArea, 0.0);
     float scanlineBrightnessAdjusted = scanlineRemainingBrightness / max(scanlineRemainingBrightness, scanlineDarkArea);
 
+    vec2 inPixelSize = 1.0 / TextureSize.xy;
+    vec2 outPixelSize = inPixelSize / finalScale.xy;
+
     // Transformations
     vec2 finalPosition = TexCoord.xy * textureScale - centerOffset;
 
     // Outputs
     TEX0.xy = finalPosition;
-    TextureScale = textureScale;
     SubpixelBlur = subpixelBlur;
     SubpixelMirrorEachLine = (stretch_algo == 3.0) ? 1.0 : 0.0;
     SubpixelMirrorEachFrame = (stretch_algo == 4.0) ? 1.0 : 0.0;
     ScanlineWidth = scanlineWidthAdjusted;
     ScanlineBrightness = scanlineBrightnessAdjusted;
+    InPixelSize = inPixelSize;
+    OutPixelSize = outPixelSize;
 }
 
 #elif defined(FRAGMENT)
@@ -153,12 +157,13 @@ uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
 uniform sampler2D Texture;
 COMPAT_VARYING vec4 TEX0;
-COMPAT_VARYING vec2 TextureScale;
 COMPAT_VARYING vec2 SubpixelBlur;
 COMPAT_VARYING float SubpixelMirrorEachLine;
 COMPAT_VARYING float SubpixelMirrorEachFrame;
 COMPAT_VARYING vec2 ScanlineWidth;
 COMPAT_VARYING float ScanlineBrightness;
+COMPAT_VARYING vec2 InPixelSize;
+COMPAT_VARYING vec2 OutPixelSize;
 // in variables go here as COMPAT_VARYING whatever
 
 #ifdef PARAMETER_UNIFORM
@@ -199,8 +204,6 @@ vec4 pixel(sampler2D tex, vec2 pos)
 
 vec3 offScreenTexture(vec2 pos)
 {
-    vec2 inPixelSize = 1.0 / TextureSize.xy;
-    vec2 outPixelSize = InputSize.xy * TextureScale / (TextureSize * 1.00001 * OutputSize.xy);
     float PI = 3.1415;
 
     float brightness = 0.0;
@@ -208,7 +211,7 @@ vec3 offScreenTexture(vec2 pos)
     float pattern = offscreen_texture;
 
     if (pattern > 3.5) { // 4 pixels of scanlines
-        vec2 expandScanlines = 4.0 * inPixelSize;
+        vec2 expandScanlines = 4.0 * InPixelSize;
         vec2 screenSize = InputSize.xy / TextureSize.xy;
         if (pos.x >= -expandScanlines.x && pos.x <= screenSize.x + expandScanlines.x &&
             pos.y >= -expandScanlines.y && pos.y <= screenSize.y + expandScanlines.y)
@@ -222,17 +225,17 @@ vec3 offScreenTexture(vec2 pos)
         if (pattern <= 0.1) { // Pattern 0
             brightness = 0.0;
         } else { // Pattern 1
-            vec2 transformed = pos.xy / outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 transformed = pos.xy / OutPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
             vec2 pattern = abs(cos(transformed.xy * PI * 0.125));
             brightness = pattern.x * pattern.y;
         }
     } else {
         if (pattern <= 2.1) { // Pattern 2
-            vec2 transformed = pos.xy / outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 transformed = pos.xy / OutPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
             vec2 pattern = 1.0 - abs(cos(transformed.xy * PI * 0.125));
             brightness = max(pattern.x, pattern.y);
         } else { // Pattern 3
-            vec2 transformed = pos.xy / outPixelSize;
+            vec2 transformed = pos.xy / OutPixelSize;
             brightness = abs(cos((transformed.y * 0.25 + sin(transformed.x * PI * 0.125) * 0.5) * PI));
         }
     }
@@ -253,7 +256,7 @@ void main()
 
     vec2 subpixelBlur = SubpixelBlur;
     vec2 FIX = TextureSize.xy / InputSize.xy;
-    if (SubpixelMirrorEachLine > 0.5 && fract(floor(vTexCoord.y / TextureScale.y * OutputSize.y * FIX.y) * 0.5) == 0.0)
+    if (SubpixelMirrorEachLine > 0.5 && fract(floor(vTexCoord.y / OutPixelSize.y) * 0.5) == 0.0)
     {
         subpixelBlur *= -1.0;
     }
