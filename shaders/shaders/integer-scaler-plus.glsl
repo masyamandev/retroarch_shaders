@@ -184,7 +184,7 @@ uniform COMPAT_PRECISION float scanlines_color_b;
 vec4 pixel(sampler2D tex, vec2 pos)
 {
     float brightness = (fract(0.99999 - TextureSize.y * pos.y) < ScanlineWidth.y || fract(0.99999 - TextureSize.x * pos.x) < ScanlineWidth.x) ? ScanlineBrightness : 1.0;
-    vec4 pix = COMPAT_TEXTURE(tex, pos);
+    vec4 pix = COMPAT_TEXTURE(tex, clamp(pos, vec2(0.0, 0.0), InputSize.xy / TextureSize.xy - 0.000001));
 	return vec4(pix.rgb * brightness + vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b) * (1.0 - brightness), pix.a);
 
     // Debug: draw 1 pixel lines or dot matrix
@@ -200,7 +200,7 @@ vec4 pixel(sampler2D tex, vec2 pos)
 vec3 offScreenTexture(vec2 pos)
 {
     vec2 inPixelSize = 1.0 / TextureSize.xy;
-    vec2 outPixelSize = 1.0 / TextureScale * OutputSize * TextureSize.xy / InputSize.xy;
+    vec2 outPixelSize = InputSize.xy * TextureScale / (TextureSize * 1.00001 * OutputSize.xy);
     float PI = 3.1415;
 
     float brightness = 0.0;
@@ -222,18 +222,18 @@ vec3 offScreenTexture(vec2 pos)
         if (pattern <= 0.1) { // Pattern 0
             brightness = 0.0;
         } else { // Pattern 1
-            vec2 transformed = pos.xy * outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
-            vec2 pattern = abs(cos(transformed.xy * PI * 0.1666666));
+            vec2 transformed = pos.xy / outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 pattern = abs(cos(transformed.xy * PI * 0.125));
             brightness = pattern.x * pattern.y;
         }
     } else {
         if (pattern <= 2.1) { // Pattern 2
-            vec2 transformed = pos.xy * outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 transformed = pos.xy / outPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
             vec2 pattern = 1.0 - abs(cos(transformed.xy * PI * 0.125));
             brightness = max(pattern.x, pattern.y);
         } else { // Pattern 3
-            vec2 transformed = pos.xy * outPixelSize * 0.25;
-            brightness = abs(cos((transformed.y + sin(transformed.x * PI * 0.5) * PI * 0.125) * PI));
+            vec2 transformed = pos.xy / outPixelSize;
+            brightness = abs(cos((transformed.y * 0.25 + sin(transformed.x * PI * 0.125) * 0.5) * PI));
         }
     }
 
