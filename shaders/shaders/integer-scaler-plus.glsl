@@ -131,11 +131,12 @@ void main()
 
     vec2 centerOffset = floor(OutputSize.xy / finalScale - InputSize.xy) * 0.5 / TextureSize.xy;
 
-    vec2 scanlineWidthAdjusted = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) / finalScale;
-    float scanlineDarkArea = scanlineWidthAdjusted.x + scanlineWidthAdjusted.y - scanlineWidthAdjusted.x * scanlineWidthAdjusted.y;
-    float scanlineBrightArea = 1.0 - scanlineDarkArea;
+    vec2 scanlinesEnabled = step(vec2(2.0, 2.0), finalScale); // Disable scalnines if scaling is < 2x.
+    vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * scanlinesEnabled;
+    vec2 scanlineWidthAdjusted = 1.0 - scalnineWidthPixels / finalScale;
+    float scanlineBrightArea = scanlineWidthAdjusted.x * scanlineWidthAdjusted.y;
     float scanlineRemainingBrightness = max(scanlines_brightness - scanlineBrightArea, 0.0);
-    float scanlineBrightnessAdjusted = scanlineRemainingBrightness / max(scanlineRemainingBrightness, scanlineDarkArea);
+    float scanlineBrightnessAdjusted = scanlineRemainingBrightness / max(scanlineRemainingBrightness, 1.0 - scanlineBrightArea);
 
     vec2 inPixelSize = 1.0 / TextureSize.xy;
     vec2 outPixelSize = inPixelSize / finalScale.xy;
@@ -234,7 +235,7 @@ uniform COMPAT_PRECISION float scanlines_color_b;
 
 vec4 pixel(sampler2D tex, vec2 pos)
 {
-    float brightness = (fract(0.99999 - TextureSize.y * pos.y) < ScanlineWidth.y || fract(0.99999 - TextureSize.x * pos.x) < ScanlineWidth.x) ? ScanlineBrightness : 1.0;
+    float brightness = (fract(TextureSize.y * pos.y) < ScanlineWidth.y && fract(TextureSize.x * pos.x) < ScanlineWidth.x) ? 1.0 : ScanlineBrightness;
     vec4 pix = COMPAT_TEXTURE(tex, clamp(pos, vec2(0.0, 0.0), InputSize.xy / TextureSize.xy - 0.000001));
 	return vec4(pix.rgb * brightness + vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b) * (1.0 - brightness), pix.a);
 
@@ -299,7 +300,7 @@ vec3 getSmoothPixel(vec2 pos) {
     vec2 leftTopCornerOfPixel = floor(pos / InPixelSize) * InPixelSize;
     vec2 rightBotCornerOfPixel = leftTopCornerOfPixel + InPixelSize;
 
-    vec2 scanlinesPoint = leftTopCornerOfPixel + (rightBotCornerOfPixel - leftTopCornerOfPixel) * (vec2(1.0, 1.0) - ScanlineWidth);
+    vec2 scanlinesPoint = leftTopCornerOfPixel + (rightBotCornerOfPixel - leftTopCornerOfPixel) * ScanlineWidth; // TODO make scanlines inversed
     if (scanlinesPoint.x < pos.x) {
         leftTopCornerOfPixel.x = max(leftTopCornerOfPixel.x, scanlinesPoint.x);
     } else {
