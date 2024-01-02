@@ -233,25 +233,25 @@ uniform COMPAT_PRECISION float scanlines_color_b;
 #define OutSize vec4(OutputSize, 1.0 / OutputSize)
 
 
-vec4 pixel(sampler2D tex, vec2 pos)
+vec3 pixel(sampler2D tex, vec2 pos)
 {
     float brightness = (fract(TextureSize.y * pos.y) < ScanlineWidth.y && fract(TextureSize.x * pos.x) < ScanlineWidth.x) ? 1.0 : ScanlineBrightness;
     vec4 pix = COMPAT_TEXTURE(tex, clamp(pos, vec2(0.0, 0.0), InputSize.xy / TextureSize.xy - 0.000001));
-	return vec4(pix.rgb * brightness + vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b) * (1.0 - brightness), pix.a);
+	return mix(vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b), pix.rgb, brightness);
 
     // Debug: draw 1 pixel lines or dot matrix
 //    vec2 coords = pos.xy * TextureSize.xy;
 //    vec2 dither = fract(vec2(coords.x / 2.0, coords.y / 32.0));
 //
-//    vec4 color = ((dither.x - 0.5) * (dither.y - 0.5) >= 0.0) ?
-//        vec4(1.0, 1.0, 1.0, 1.0) :
-//        vec4(0.0, 0.0, 0.0, 1.0);
+//    vec3 color = ((dither.x - 0.5) * (dither.y - 0.5) >= 0.0) ?
+//        vec3(1.0, 1.0, 1.0) :
+//        vec3(0.0, 0.0, 0.0);
 //    return color;
 
 //    vec2 coords = floor(pos.xy * TextureSize.xy);
-//    vec4 color = (fract((coords.x + coords.y) / 8.0) == 0.0) ?
-//        vec4(1.0, 1.0, 1.0, 1.0) :
-//        vec4(0.0, 0.0, 0.0, 1.0);
+//    vec3 color = (fract((coords.x + coords.y) / 8.0) == 0.0) ?
+//        vec3(1.0, 1.0, 1.0) :
+//        vec3(0.0, 0.0, 0.0);
 //    return color;
 }
 
@@ -319,17 +319,17 @@ vec3 getSmoothPixel(vec2 pos) {
     vec2 rightBotPixelSize = (pos + BlurDirection) - rightBotCornerOfPixel;
 
     vec3 color =
-        pixel(Source, pos + vec2(-BlurDirection.x, -BlurDirection.y)).rgb * leftTopPixelSize.x * leftTopPixelSize.y +
-        pixel(Source, pos + vec2(0.0, -BlurDirection.y)).rgb * centralPixelSize.x * leftTopPixelSize.y +
-        pixel(Source, pos + vec2(BlurDirection.x, -BlurDirection.y)).rgb * rightBotPixelSize.x * leftTopPixelSize.y +
+        pixel(Source, pos + vec2(-BlurDirection.x, -BlurDirection.y)) * leftTopPixelSize.x * leftTopPixelSize.y +
+        pixel(Source, pos + vec2(0.0, -BlurDirection.y)) * centralPixelSize.x * leftTopPixelSize.y +
+        pixel(Source, pos + vec2(BlurDirection.x, -BlurDirection.y)) * rightBotPixelSize.x * leftTopPixelSize.y +
     
-        pixel(Source, pos + vec2(-BlurDirection.x, 0.0)).rgb * leftTopPixelSize.x * centralPixelSize.y +
-        pixel(Source, pos).rgb * centralPixelSize.x * centralPixelSize.y +
-        pixel(Source, pos + vec2(BlurDirection.x, 0.0)).rgb * rightBotPixelSize.x * centralPixelSize.y +
+        pixel(Source, pos + vec2(-BlurDirection.x, 0.0)) * leftTopPixelSize.x * centralPixelSize.y +
+        pixel(Source, pos) * centralPixelSize.x * centralPixelSize.y +
+        pixel(Source, pos + vec2(BlurDirection.x, 0.0)) * rightBotPixelSize.x * centralPixelSize.y +
     
-        pixel(Source, pos + vec2(-BlurDirection.x, BlurDirection.y)).rgb * leftTopPixelSize.x * rightBotPixelSize.y +
-        pixel(Source, pos + vec2(0.0, BlurDirection.y)).rgb * centralPixelSize.x * rightBotPixelSize.y +
-        pixel(Source, pos + vec2(BlurDirection.x, BlurDirection.y)).rgb * rightBotPixelSize.x * rightBotPixelSize.y
+        pixel(Source, pos + vec2(-BlurDirection.x, BlurDirection.y)) * leftTopPixelSize.x * rightBotPixelSize.y +
+        pixel(Source, pos + vec2(0.0, BlurDirection.y)) * centralPixelSize.x * rightBotPixelSize.y +
+        pixel(Source, pos + vec2(BlurDirection.x, BlurDirection.y)) * rightBotPixelSize.x * rightBotPixelSize.y
     ;
 
     color /= BlurDirection.x * BlurDirection.y * 4.0;
@@ -357,17 +357,17 @@ void main()
 //        subpixelDirection *= -1.0;
 //    }
 //
-//    vec4 color0 = pixel(Source, vTexCoord - subpixelDirection * 2.5);
-//    vec4 color1 = pixel(Source, vTexCoord - subpixelDirection * 2.0);
-//    vec4 color2 = pixel(Source, vTexCoord - subpixelDirection * 1.5);
-//    vec4 color3 = pixel(Source, vTexCoord - subpixelDirection * 1.0);
-//    vec4 color4 = pixel(Source, vTexCoord - subpixelDirection * 0.5);
-//    vec4 color5 = pixel(Source, vTexCoord);
-//    vec4 color6 = pixel(Source, vTexCoord + subpixelDirection * 0.5);
-//    vec4 color7 = pixel(Source, vTexCoord + subpixelDirection * 1.0);
-//    vec4 color8 = pixel(Source, vTexCoord + subpixelDirection * 1.5);
-//    vec4 color9 = pixel(Source, vTexCoord + subpixelDirection * 2.0);
-//    vec4 colorA = pixel(Source, vTexCoord + subpixelDirection * 2.5);
+//    vec3 color0 = pixel(Source, vTexCoord - subpixelDirection * 2.5);
+//    vec3 color1 = pixel(Source, vTexCoord - subpixelDirection * 2.0);
+//    vec3 color2 = pixel(Source, vTexCoord - subpixelDirection * 1.5);
+//    vec3 color3 = pixel(Source, vTexCoord - subpixelDirection * 1.0);
+//    vec3 color4 = pixel(Source, vTexCoord - subpixelDirection * 0.5);
+//    vec3 color5 = pixel(Source, vTexCoord);
+//    vec3 color6 = pixel(Source, vTexCoord + subpixelDirection * 0.5);
+//    vec3 color7 = pixel(Source, vTexCoord + subpixelDirection * 1.0);
+//    vec3 color8 = pixel(Source, vTexCoord + subpixelDirection * 1.5);
+//    vec3 color9 = pixel(Source, vTexCoord + subpixelDirection * 2.0);
+//    vec3 colorA = pixel(Source, vTexCoord + subpixelDirection * 2.5);
 //
 //    vec3 color = vec3(
 //            color0.r + color1.r + color2.r + color3.r + color4.r + color5.r + color6.r,
