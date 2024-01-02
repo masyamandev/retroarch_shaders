@@ -118,7 +118,7 @@ void main()
     gl_Position = MVPMatrix * VertexCoord;
 
     // Calculate constants, same for the whole screen
-    vec2 scale1x = OutputSize.xy / InputSize.xy;
+    vec2 scale1x = OutputSize / InputSize;
     float intScaleBaseY = floorScaleY(scale1x.y);
     float scaleBaseY = min(intScaleBaseY, floorScaleY(scale1x.x * aspect_y / aspect_x / max_shrink_x));
     vec2 scaleDesired = vec2(aspect_x / aspect_y * scaleBaseY, scaleBaseY);
@@ -129,7 +129,7 @@ void main()
     vec2 finalScale = (scaleDesired.x * max_stretch_x >= scaleFullWidth.x) ? scaleFullWidth : scaleDesired;
     vec2 textureScale = 1.00001 * scale1x / finalScale;
 
-    vec2 centerOffset = floor(OutputSize.xy / finalScale - InputSize.xy) * 0.5 / TextureSize.xy;
+    vec2 centerOffset = floor(OutputSize / finalScale - InputSize) * 0.5 / TextureSize;
 
     vec2 scanlinesEnabled = step(vec2(2.0, 2.0), finalScale); // Disable scalnines if scaling is < 2x.
     vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * scanlinesEnabled;
@@ -138,8 +138,8 @@ void main()
     float scanlineRemainingBrightness = max(scanlines_brightness - scanlineBrightArea, 0.0);
     float scanlineBrightnessAdjusted = scanlineRemainingBrightness / max(scanlineRemainingBrightness, 1.0 - scanlineBrightArea);
 
-    vec2 inPixelSize = 1.0 / TextureSize.xy;
-    vec2 outPixelSize = inPixelSize / finalScale.xy;
+    vec2 inPixelSize = 1.0 / TextureSize;
+    vec2 outPixelSize = inPixelSize / finalScale;
 
     vec2 subpixelDirection = vec2(0.0, 0.0);
     vec2 blurDirection = clamp(fract(finalScale) * 100.0, vec2(0.01, 0.01), vec2(1.0, 1.0)); // 0 if integer scale and 1 otherwise
@@ -236,11 +236,11 @@ uniform COMPAT_PRECISION float scanlines_color_b;
 vec3 pixel(sampler2D tex, vec2 pos)
 {
     float brightness = (fract(TextureSize.y * pos.y) < ScanlineWidth.y && fract(TextureSize.x * pos.x) < ScanlineWidth.x) ? 1.0 : ScanlineBrightness;
-    vec4 pix = COMPAT_TEXTURE(tex, clamp(pos, vec2(0.0, 0.0), InputSize.xy / TextureSize.xy - 0.000001));
+    vec4 pix = COMPAT_TEXTURE(tex, clamp(pos, vec2(0.0, 0.0), InputSize / TextureSize - 0.000001));
 	return mix(vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b), pix.rgb, brightness);
 
     // Debug: draw 1 pixel lines or dot matrix
-//    vec2 coords = pos.xy * TextureSize.xy;
+//    vec2 coords = pos * TextureSize;
 //    vec2 dither = fract(vec2(coords.x / 2.0, coords.y / 32.0));
 //
 //    vec3 color = ((dither.x - 0.5) * (dither.y - 0.5) >= 0.0) ?
@@ -248,7 +248,7 @@ vec3 pixel(sampler2D tex, vec2 pos)
 //        vec3(0.0, 0.0, 0.0);
 //    return color;
 
-//    vec2 coords = floor(pos.xy * TextureSize.xy);
+//    vec2 coords = floor(pos * TextureSize);
 //    vec3 color = (fract((coords.x + coords.y) / 8.0) == 0.0) ?
 //        vec3(1.0, 1.0, 1.0) :
 //        vec3(0.0, 0.0, 0.0);
@@ -265,7 +265,7 @@ vec3 offScreenTexture(vec2 pos)
 
     if (pattern > 3.5) { // 4 pixels of scanlines
         vec2 expandScanlines = 4.0 * InPixelSize;
-        vec2 screenSize = InputSize.xy / TextureSize.xy;
+        vec2 screenSize = InputSize / TextureSize;
         if (pos.x >= -expandScanlines.x && pos.x <= screenSize.x + expandScanlines.x &&
             pos.y >= -expandScanlines.y && pos.y <= screenSize.y + expandScanlines.y) {
             return vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b);
@@ -277,17 +277,17 @@ vec3 offScreenTexture(vec2 pos)
         if (pattern <= 0.1) { // Pattern 0
             brightness = 0.0;
         } else { // Pattern 1
-            vec2 transformed = pos.xy / OutPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
-            vec2 pattern = abs(cos(transformed.xy * PI * 0.1875));
+            vec2 transformed = pos / OutPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 pattern = abs(cos(transformed * PI * 0.1875));
             brightness = pattern.x * pattern.y;
         }
     } else {
         if (pattern <= 2.1) { // Pattern 2
-            vec2 transformed = pos.xy / OutPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
-            vec2 pattern = 1.0 - abs(cos(transformed.xy * PI * 0.125));
+            vec2 transformed = pos / OutPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
+            vec2 pattern = 1.0 - abs(cos(transformed * PI * 0.125));
             brightness = max(pattern.x, pattern.y);
         } else { // Pattern 3
-            vec2 transformed = pos.xy / OutPixelSize;
+            vec2 transformed = pos / OutPixelSize;
             brightness = abs(cos((transformed.y * 0.25 + sin(transformed.x * PI * 0.125) * 0.5) * PI));
         }
     }
@@ -339,10 +339,10 @@ vec3 getSmoothPixel(vec2 pos) {
 
 void main()
 {
-    vec2 screenSize = InputSize.xy / TextureSize.xy;
+    vec2 screenSize = InputSize / TextureSize;
 
     if (vTexCoord.x < 0.0 || vTexCoord.x > screenSize.x || vTexCoord.y < 0.0 || vTexCoord.y > screenSize.y) {
-        vec3 pix = offScreenTexture(vTexCoord.xy);
+        vec3 pix = offScreenTexture(vTexCoord);
 	    FragColor = vec4(pix, 1.0);
         return;
     }
