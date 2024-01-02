@@ -1,10 +1,16 @@
-// version directive if necessary
+/*
+Retroarch shader for integer scaling (when possible) + scanlines / dot matrix.
 
-// good place for credits/license
+Provided as is without any warranty.
+Free for non-commercial use.
+Author: Oleksandr Maksymenko
+https://github.com/masyamandev/retroarch_shaders
+*/
 
-// TODO rename
-#pragma parameter stretch_algo "Subpixel config: 0:None,1:RGB,2:BGR,3:RGBv,4:BGRv" 1.0 0.0 4.0 1.0
-#pragma parameter fract_scale_y "Fractional scale Y (0:no,1:1/2,2:1/3,3:1/6,4:any)" 0.0 0.0 4.0 1.0
+#pragma parameter subpixel_config "Subpixel config: 0:None,1:RGB,2:BGR,3:RGBv,4:BGRv" 1.0 0.0 4.0 1.0
+#pragma parameter fract_scale_y_config "Fractional scale Y (0:no,1:1/2,2:1/3,3:1/6,4:any)" 1.0 0.0 4.0 1.0
+#pragma parameter fract_scale_y_condition "Fractional scale Y (0:never,1:rotated_scrn,2:always)" 1.0 0.0 2.0 1.0
+#pragma parameter rotated_screen "Treat Y > X as (0:normal,1:rotated_CW,2:rotated_CCW)" 1.0 0.0 2.0 1.0
 #pragma parameter max_shrink_x "Max shrink X to fit screen width" 0.8 0.5 1.0 0.05
 #pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
 #pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
@@ -65,8 +71,10 @@ uniform COMPAT_PRECISION vec2 InputSize;
 #ifdef PARAMETER_UNIFORM
 uniform COMPAT_PRECISION float aspect_x;
 uniform COMPAT_PRECISION float aspect_y;
-uniform COMPAT_PRECISION float stretch_algo;
-uniform COMPAT_PRECISION float fract_scale_y;
+uniform COMPAT_PRECISION float subpixel_config;
+uniform COMPAT_PRECISION float fract_scale_y_config;
+uniform COMPAT_PRECISION float fract_scale_y_condition;
+uniform COMPAT_PRECISION float rotated_screen;
 uniform COMPAT_PRECISION float max_shrink_x;
 uniform COMPAT_PRECISION float max_stretch_x;
 uniform COMPAT_PRECISION float int_scale_shrink_x;
@@ -76,8 +84,10 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #else
 #define aspect_x 64.0
 #define aspect_y 64.0
-#define stretch_algo 1.0
-#define fract_scale_y 0.0
+#define subpixel_config 1.0
+#define fract_scale_y_config 1.0
+#define fract_scale_y_condition 1.0
+#define rotated_screen 1.0
 #define max_shrink_x 0.8
 #define max_stretch_x 1.25
 #define int_scale_shrink_x 0.9
@@ -86,16 +96,17 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define scanlines_width_y 0.3
 #endif
 
+#define isRotatedScreen (OutputSize.y > OutputSize.x && rotated_screen != 0.0)
+
 float floorScaleY(float scale)
 {
-    // #pragma parameter fract_scale_y "Fractional scale Y (0:no,1:1/2,2:1/3,3:1/6,4:any)" 0.0 0.0 4.0 1.0
-    if (fract_scale_y == 0.0) {
+    if (fract_scale_y_config == 0.0 || fract_scale_y_condition == 0.0 || (fract_scale_y_condition == 1.0 && !isRotatedScreen)) {
         return floor(scale);
-    } else if (fract_scale_y == 1.0) {
+    } else if (fract_scale_y_config == 1.0) {
         return floor(scale * 2.0) * 0.5;
-    } else if (fract_scale_y == 2.0) {
+    } else if (fract_scale_y_config == 2.0) {
         return floor(scale * 3.0) / 3.0;
-    } else if (fract_scale_y == 1.0) {
+    } else if (fract_scale_y_config == 1.0) {
         return floor(scale * 6.0) / 6.0;
     } else {
         return scale;
@@ -112,8 +123,7 @@ void main()
     float scaleBaseY = min(intScaleBaseY, floorScaleY(scale1x.x * aspect_y / aspect_x / max_shrink_x));
     vec2 scaleDesired = vec2(aspect_x / aspect_y * scaleBaseY, scaleBaseY);
     vec2 scaleFullWidth = vec2(scale1x.x, scaleBaseY);
-    if (floor(scaleFullWidth.x) / scaleFullWidth.x >= int_scale_shrink_x)
-    {
+    if (floor(scaleFullWidth.x) / scaleFullWidth.x >= int_scale_shrink_x) {
         scaleFullWidth = vec2(floor(scaleFullWidth.x), scaleBaseY);
     }
     vec2 finalScale = (scaleDesired.x * max_stretch_x >= scaleFullWidth.x) ? scaleFullWidth : scaleDesired;
@@ -132,23 +142,24 @@ void main()
 
     vec2 subpixelDirection = vec2(0.0, 0.0);
     vec2 blurDirection = clamp(fract(finalScale) * 100.0, vec2(0.01, 0.01), vec2(1.0, 1.0)); // 0 if integer scale and 1 otherwise
-    if (stretch_algo == 1.0)
-    {
+    if (subpixel_config == 1.0) {
         subpixelDirection = vec2(-0.333333333, 0.0) * outPixelSize;
-    }
-    else if (stretch_algo == 2.0)
-    {
+    } else if (subpixel_config == 2.0) {
         subpixelDirection = vec2(0.333333333, 0.0) * outPixelSize;
-    }
-    else if (stretch_algo == 3.0)
-    {
+    } else if (subpixel_config == 3.0) {
         subpixelDirection = vec2(0.0, -0.333333333) * outPixelSize;
-    }
-    else if (stretch_algo == 4.0)
-    {
+    } else if (subpixel_config == 4.0) {
         subpixelDirection = vec2(0.0, 0.333333333) * outPixelSize;
     }
     blurDirection *= outPixelSize * 0.5;
+
+    if (isRotatedScreen) {
+        if (rotated_screen == 1.0) {
+            subpixelDirection *= mat2(0.0, -1.0, 1.0, 0.0);
+        } else {
+            subpixelDirection *= mat2(0.0, 1.0, -1.0, 0.0);
+        }
+    }
 
     // Transformations
     vec2 finalPosition = TexCoord.xy * textureScale - centerOffset;
@@ -255,8 +266,7 @@ vec3 offScreenTexture(vec2 pos)
         vec2 expandScanlines = 4.0 * InPixelSize;
         vec2 screenSize = InputSize.xy / TextureSize.xy;
         if (pos.x >= -expandScanlines.x && pos.x <= screenSize.x + expandScanlines.x &&
-            pos.y >= -expandScanlines.y && pos.y <= screenSize.y + expandScanlines.y)
-        {
+            pos.y >= -expandScanlines.y && pos.y <= screenSize.y + expandScanlines.y) {
             return vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b);
         }
         pattern -= 4.0;
@@ -290,14 +300,16 @@ vec3 getSmoothPixel(vec2 pos) {
     vec2 rightBotCornerOfPixel = leftTopCornerOfPixel + InPixelSize;
 
     vec2 scanlinesPoint = leftTopCornerOfPixel + (rightBotCornerOfPixel - leftTopCornerOfPixel) * (vec2(1.0, 1.0) - ScanlineWidth);
-    if (scanlinesPoint.x < pos.x)
+    if (scanlinesPoint.x < pos.x) {
         leftTopCornerOfPixel.x = max(leftTopCornerOfPixel.x, scanlinesPoint.x);
-    else
+    } else {
         rightBotCornerOfPixel.x = min(rightBotCornerOfPixel.x, scanlinesPoint.x);
-    if (scanlinesPoint.y < pos.y)
+    }
+    if (scanlinesPoint.y < pos.y) {
         leftTopCornerOfPixel.y = max(leftTopCornerOfPixel.y, scanlinesPoint.y);
-    else
+    } else {
         rightBotCornerOfPixel.y = min(rightBotCornerOfPixel.y, scanlinesPoint.y);
+    }
 
     leftTopCornerOfPixel = max(leftTopCornerOfPixel, pos - BlurDirection);
     rightBotCornerOfPixel = min(rightBotCornerOfPixel, pos + BlurDirection);
@@ -328,8 +340,7 @@ void main()
 {
     vec2 screenSize = InputSize.xy / TextureSize.xy;
 
-    if (vTexCoord.x < 0.0 || vTexCoord.x > screenSize.x || vTexCoord.y < 0.0 || vTexCoord.y > screenSize.y)
-    {
+    if (vTexCoord.x < 0.0 || vTexCoord.x > screenSize.x || vTexCoord.y < 0.0 || vTexCoord.y > screenSize.y) {
         vec3 pix = offScreenTexture(vTexCoord.xy);
 	    FragColor = vec4(pix, 1.0);
         return;
