@@ -300,7 +300,7 @@ vec3 getSmoothPixel(vec2 pos) {
     vec2 leftTopCornerOfPixel = floor(pos / InPixelSize) * InPixelSize;
     vec2 rightBotCornerOfPixel = leftTopCornerOfPixel + InPixelSize;
 
-    vec2 scanlinesPoint = leftTopCornerOfPixel + (rightBotCornerOfPixel - leftTopCornerOfPixel) * ScanlineWidth; // TODO make scanlines inversed
+    vec2 scanlinesPoint = leftTopCornerOfPixel + (rightBotCornerOfPixel - leftTopCornerOfPixel) * ScanlineWidth;
     if (scanlinesPoint.x < pos.x) {
         leftTopCornerOfPixel.x = max(leftTopCornerOfPixel.x, scanlinesPoint.x);
     } else {
