@@ -151,7 +151,7 @@ void main()
     } else if (subpixel_config == 4.0) {
         subpixelDirection = vec2(0.0, 0.333333333) * outPixelSize;
     }
-    blurDirection *= outPixelSize * 0.5;
+    blurDirection *= outPixelSize * 0.66666666;
 
     if (isRotatedScreen) {
         if (rotated_screen == 1.0) {
@@ -346,17 +346,16 @@ void main()
         return;
     }
 
-//    vec2 subpixelDirection = SubpixelDirection;
-//    vec2 FIX = TextureSize.xy / InputSize.xy;
-//    if (SubpixelMirrorEachLine > 0.5 && fract(floor(vTexCoord.y / OutPixelSize.y) * 0.5) == 0.0)
+//    vec2 subpixelDirection = - SubpixelDirection;
+//    if (false && fract(floor(vTexCoord.y / OutPixelSize.y) * 0.5) == 0.0)
 //    {
 //        subpixelDirection *= -1.0;
 //    }
-//    if (SubpixelMirrorEachFrame > 0.5 && mod(float(FrameCount), 2.0) == 0.0)
+//    if (true && mod(float(FrameCount), 2.0) == 0.0)
 //    {
 //        subpixelDirection *= -1.0;
 //    }
-
+//
 //    vec4 color0 = pixel(Source, vTexCoord - subpixelDirection * 2.5);
 //    vec4 color1 = pixel(Source, vTexCoord - subpixelDirection * 2.0);
 //    vec4 color2 = pixel(Source, vTexCoord - subpixelDirection * 1.5);
@@ -368,36 +367,13 @@ void main()
 //    vec4 color8 = pixel(Source, vTexCoord + subpixelDirection * 1.5);
 //    vec4 color9 = pixel(Source, vTexCoord + subpixelDirection * 2.0);
 //    vec4 colorA = pixel(Source, vTexCoord + subpixelDirection * 2.5);
-
-//    vec3 color =
-////         (subpixelDirection.x == 0.0 && subpixelDirection.y == 0.0) ?
-////         (color0.rgb + color1.rgb + color2.rgb + color3.rgb + color4.rgb + color5.rgb + color6.rgb + color7.rgb + color8.rgb + color9.rgb + colorA.rgb) / 11.0 :
-//        vec3(
+//
+//    vec3 color = vec3(
 //            color0.r + color1.r + color2.r + color3.r + color4.r + color5.r + color6.r,
 //            color2.g + color3.g + color4.g + color5.g + color6.g + color7.g + color8.g,
 //            color4.b + color5.b + color6.b + color7.b + color8.b + color9.b + colorA.b
 //        ) / 7.0;
 
-//    vec3 color = vec3(0.0, 0.0, 0.0);
-//    for (int i = -8; i <= 8; i++) {
-//        vec2 offset = subpixelDirection * float(i) / 8.0;
-//        color += vec3(
-//            pixel(Source, vTexCoord + offset - subpixelDirection * 1.0).r,
-//            pixel(Source, vTexCoord + offset - subpixelDirection * 0.0).g,
-//            pixel(Source, vTexCoord + offset + subpixelDirection * 1.0).b
-//        );
-//    }
-//    color = color / 17.0;
-
-//    vec3 color = pixel(Source, vTexCoord + subpixelDirection * 3.0 * 8.0).rgb;
-
-//    vec3 color = vec3(color3.r, color5.g, color7.b);
-
-//     if (experiments == 4.0) {
-//         color = (color0.rgb + color1.rgb + color2.rgb + color3.rgb + color4.rgb + color5.rgb + color6.rgb + color7.rgb + color8.rgb + color9.rgb + colorA.rgb) / 11.0;
-//     }
-
-//    float frameFlip = mod(float(FrameCount), 2.0) * 2.0 - 1.0;
     vec3 color = vec3(
         getSmoothPixel(vTexCoord + SubpixelDirection).r,
         getSmoothPixel(vTexCoord).g,
