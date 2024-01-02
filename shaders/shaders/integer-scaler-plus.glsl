@@ -103,11 +103,11 @@ float floorScaleY(float scale)
     if (fract_scale_y_config == 0.0 || fract_scale_y_condition == 0.0 || (fract_scale_y_condition == 1.0 && !isRotatedScreen)) {
         return floor(scale);
     } else if (fract_scale_y_config == 1.0) {
-        return floor(scale * 2.0) * 0.5;
+        return floor(scale * 2.00001) * 0.5;
     } else if (fract_scale_y_config == 2.0) {
-        return floor(scale * 3.0) / 3.0;
-    } else if (fract_scale_y_config == 1.0) {
-        return floor(scale * 6.0) / 6.0;
+        return floor(scale * 3.00001) / 3.0;
+    } else if (fract_scale_y_config == 3.0) {
+        return floor(scale * 6.00001) / 6.0;
     } else {
         return scale;
     }
@@ -277,7 +277,7 @@ vec3 offScreenTexture(vec2 pos)
             brightness = 0.0;
         } else { // Pattern 1
             vec2 transformed = pos.xy / OutPixelSize * mat2(1.0, 1.0, 1.0, -1.0);
-            vec2 pattern = abs(cos(transformed.xy * PI * 0.125));
+            vec2 pattern = abs(cos(transformed.xy * PI * 0.1875));
             brightness = pattern.x * pattern.y;
         }
     } else {
