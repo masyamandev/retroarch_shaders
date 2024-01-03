@@ -1,0 +1,18 @@
+shaders = 1
+
+shader0 = shaders/integer-scaler-plus.glsl
+filter_linear0 = false
+scale_type0 = viewport
+
+subpixel_config = 3.0
+scanlines_brightness = 0.85
+scanlines_width_y = 0.1
+scanlines_width_x = 0.1
+scanlines_color_r = 0.04
+scanlines_color_g = 0.85
+scanlines_color_b = 0.92
+max_shrink_x = 1.0
+max_stretch_x = 1.0
+aspect_x = 5.0
+aspect_y = 5.0
+offscreen_texture = 7.0
