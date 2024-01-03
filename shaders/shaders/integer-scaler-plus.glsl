@@ -129,7 +129,7 @@ void main()
     vec2 finalScale = (scaleDesired.x * max_stretch_x >= scaleFullWidth.x) ? scaleFullWidth : scaleDesired;
     vec2 textureScale = 1.00001 * scale1x / finalScale;
 
-    vec2 centerOffset = floor(OutputSize / finalScale - InputSize) * 0.5 / TextureSize;
+    vec2 centerOffset = floor((OutputSize / finalScale - InputSize) * 0.5) / TextureSize;
 
     vec2 scanlinesEnabled = step(vec2(2.0, 2.0), finalScale); // Disable scalnines if scaling is < 2x.
     vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * scanlinesEnabled;
@@ -152,6 +152,7 @@ void main()
     } else if (subpixel_config == 4.0) {
         subpixelDirection = vec2(0.0, 0.333333333) * outPixelSize;
     }
+    subpixelDirection *= blurDirection;
     blurDirection *= outPixelSize * 0.66666666;
 
     if (isRotatedScreen) {
