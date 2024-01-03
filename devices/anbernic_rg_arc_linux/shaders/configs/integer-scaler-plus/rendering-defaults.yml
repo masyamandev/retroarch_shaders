@@ -1,0 +1,110 @@
+## CURVATURE
+default:
+  # shader affects retroarch shaders
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+  # scanline affect fba2x
+  scanline: false
+snes:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-5x4
+nes:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-5x4
+n64:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+gba:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-full
+gb:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1-DMG
+gbc:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1
+fds:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-5x4
+virtualboy:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+# Sega
+sg1000:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-1x1
+mastersystem:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-1x1
+megadrive:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+gamegear:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-6x5
+sega32x:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+segacd:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+# Arcade
+neogeo:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+neogeocd:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+mame:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+hbmame:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+fba:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+naomi:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+atomiswave:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+#
+ngp:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1
+ngpc:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1
+gw:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+vectrex:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+lynx:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1
+lutro:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+wswan:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1
+wswanc:
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1
+pcengine:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+pcenginecd:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+supergrafx:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+atari800:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+atari2600:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+atari5200:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+atari7800:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+prboom:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+psx:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+colecovision:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+# Computers
+msx:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+msx1:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+msx2:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+amiga:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+amstradcpc:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+atarist:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+zxspectrum:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+odyssey2:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+zx81:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+pcfx:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+x68000:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
