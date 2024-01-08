@@ -14,8 +14,8 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter max_shrink_x "Max shrink X to fit screen width" 0.8 0.5 1.0 0.05
 #pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
 #pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
-#pragma parameter aspect_x "Pixel Aspect Ratio X" 5.0 1.0 256. 1.0
-#pragma parameter aspect_y "Pixel Aspect Ratio Y" 5.0 1.0 256. 1.0
+#pragma parameter aspect_x "Pixel Aspect Ratio X (0:output_ratio)" 5.0 0.0 256. 1.0
+#pragma parameter aspect_y "Pixel Aspect Ratio Y (0:output_ratio)" 5.0 0.0 256. 1.0
 #pragma parameter scanlines_brightness "Scanlines brightness" 0.85 0.0 1.0 0.01
 #pragma parameter scanlines_width_y "Scanlines horizontal thickness" 0.3 0.0 0.5 0.1
 #pragma parameter scanlines_width_x "Scanlines vertical thickness" 0.0 0.0 0.5 0.1
@@ -101,7 +101,7 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 float floorScaleY(float scale)
 {
     if (fract_scale_y_config == 0.0 || fract_scale_y_condition == 0.0 || (fract_scale_y_condition == 1.0 && !isRotatedScreen)) {
-        return floor(scale);
+        return floor(scale * 1.00001);
     } else if (fract_scale_y_config == 1.0) {
         return floor(scale * 2.00001) * 0.5;
     } else if (fract_scale_y_config == 2.0) {
@@ -119,9 +119,15 @@ void main()
 
     // Calculate constants, same for the whole screen
     vec2 scale1x = OutputSize / InputSize;
+    float aspect;
+    if (aspect_x * aspect_y > 0.0) {
+        aspect = aspect_x / aspect_y;
+    } else {
+        aspect = scale1x.x / scale1x.y;
+    }
     float intScaleBaseY = floorScaleY(scale1x.y);
-    float scaleBaseY = min(intScaleBaseY, floorScaleY(scale1x.x * aspect_y / aspect_x / max_shrink_x));
-    vec2 scaleDesired = vec2(aspect_x / aspect_y * scaleBaseY, scaleBaseY);
+    float scaleBaseY = min(intScaleBaseY, floorScaleY(scale1x.x  / (aspect * max_shrink_x)));
+    vec2 scaleDesired = vec2(aspect * scaleBaseY, scaleBaseY);
     vec2 scaleFullWidth = vec2(scale1x.x, scaleBaseY);
     if (floor(scaleFullWidth.x) / scaleFullWidth.x >= int_scale_shrink_x) {
         scaleFullWidth = vec2(floor(scaleFullWidth.x), scaleBaseY);
