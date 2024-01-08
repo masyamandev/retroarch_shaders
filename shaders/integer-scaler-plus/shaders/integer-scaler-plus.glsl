@@ -122,6 +122,9 @@ void main()
     float aspect;
     if (aspect_x * aspect_y > 0.0) {
         aspect = aspect_x / aspect_y;
+    } else if (isRotatedScreen) {
+        vec2 scaleRotated = OutputSize.yx / InputSize.xy;
+        aspect = scaleRotated.x / scaleRotated.y;
     } else {
         aspect = scale1x.x / scale1x.y;
     }
