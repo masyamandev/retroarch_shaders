@@ -101,13 +101,13 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 float floorScaleY(float scale)
 {
     if (fract_scale_y_config == 0.0 || fract_scale_y_condition == 0.0 || (fract_scale_y_condition == 1.0 && !isRotatedScreen)) {
-        return floor(scale * 1.00001);
+        return floor(scale * 1.001);
     } else if (fract_scale_y_config == 1.0) {
-        return floor(scale * 2.00001) * 0.5;
+        return floor(scale * 2.001) * 0.5;
     } else if (fract_scale_y_config == 2.0) {
-        return floor(scale * 3.00001) / 3.0;
+        return floor(scale * 3.001) / 3.0;
     } else if (fract_scale_y_config == 3.0) {
-        return floor(scale * 6.00001) / 6.0;
+        return floor(scale * 6.001) / 6.0;
     } else {
         return scale;
     }
@@ -129,7 +129,7 @@ void main()
         aspect = scale1x.x / scale1x.y;
     }
     float intScaleBaseY = floorScaleY(scale1x.y);
-    float scaleBaseY = min(intScaleBaseY, floorScaleY(scale1x.x  / (aspect * max_shrink_x)));
+    float scaleBaseY = min(intScaleBaseY, floorScaleY(scale1x.x / (aspect * max_shrink_x)));
     vec2 scaleDesired = vec2(aspect * scaleBaseY, scaleBaseY);
     vec2 scaleFullWidth = vec2(scale1x.x, scaleBaseY);
     if (floor(scaleFullWidth.x) / scaleFullWidth.x >= int_scale_shrink_x) {
