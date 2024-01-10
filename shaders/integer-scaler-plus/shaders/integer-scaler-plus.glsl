@@ -13,6 +13,7 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter rotated_screen "Treat Y > X as (0:normal,1:rotated_CW,2:rotated_CCW)" 1.0 0.0 2.0 1.0
 #pragma parameter max_shrink_x "Max shrink X to fit screen width" 0.8 0.5 1.0 0.05
 #pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
+#pragma parameter rotated_stretch_x "Stretch output X in rotated screen" 1.0 1.0 2.0 0.05
 #pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
 #pragma parameter aspect_x "Pixel Aspect Ratio X (0:output_ratio)" 5.0 0.0 256. 1.0
 #pragma parameter aspect_y "Pixel Aspect Ratio Y (0:output_ratio)" 5.0 0.0 256. 1.0
@@ -77,6 +78,7 @@ uniform COMPAT_PRECISION float fract_scale_y_condition;
 uniform COMPAT_PRECISION float rotated_screen;
 uniform COMPAT_PRECISION float max_shrink_x;
 uniform COMPAT_PRECISION float max_stretch_x;
+uniform COMPAT_PRECISION float rotated_stretch_x;
 uniform COMPAT_PRECISION float int_scale_shrink_x;
 uniform COMPAT_PRECISION float scanlines_brightness;
 uniform COMPAT_PRECISION float scanlines_width_x;
@@ -90,6 +92,7 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define rotated_screen 1.0
 #define max_shrink_x 0.8
 #define max_stretch_x 1.25
+#define rotated_stretch_x 1.0
 #define int_scale_shrink_x 0.9
 #define scanlines_brightness 0.85
 #define scanlines_width_x 0.0
@@ -129,7 +132,8 @@ void main()
         aspect = scale1x.x / scale1x.y;
     }
     float intScaleBaseY = floorScaleY(scale1x.y);
-    float scaleBaseY = min(intScaleBaseY, floorScaleY(scale1x.x / (aspect * max_shrink_x)));
+    float intScaleBaseYX = isRotatedScreen ? floorScaleY(scale1x.x / aspect * rotated_stretch_x) : floorScaleY(scale1x.x / (aspect * max_shrink_x));
+    float scaleBaseY = min(intScaleBaseY, intScaleBaseYX);
     vec2 scaleDesired = vec2(aspect * scaleBaseY, scaleBaseY);
     vec2 scaleFullWidth = vec2(scale1x.x, scaleBaseY);
     if (floor(scaleFullWidth.x) / scaleFullWidth.x >= int_scale_shrink_x) {
