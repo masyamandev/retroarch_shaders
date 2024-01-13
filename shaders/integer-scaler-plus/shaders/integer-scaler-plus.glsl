@@ -10,7 +10,6 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter subpixel_config "Subpixel config: 0:None,1:RGB,2:BGR,3:RGBv,4:BGRv" 1.0 0.0 4.0 1.0
 #pragma parameter fract_scale_y_config "Fractional scale Y (0:no,1:1/2,2:1/3,3:1/6,4:any)" 1.0 0.0 4.0 1.0
 #pragma parameter fract_scale_y_condition "Fractional scale Y (0:never,1:rotated_scrn,2:always)" 1.0 0.0 2.0 1.0
-#pragma parameter rotated_screen "Treat Y > X as (0:normal,1:rotated_CW,2:rotated_CCW)" 1.0 0.0 2.0 1.0
 #pragma parameter max_shrink_x "Max shrink X to fit screen width" 0.8 0.5 1.0 0.05
 #pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
 #pragma parameter rotated_stretch_x "Stretch output X in rotated screen" 1.0 1.0 2.0 0.05
@@ -62,6 +61,7 @@ uniform COMPAT_PRECISION int FrameCount;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
+uniform COMPAT_PRECISION int Rotation;
 
 // compatibility #defines
 #define vTexCoord TEX0.xy
@@ -74,7 +74,6 @@ uniform COMPAT_PRECISION float aspect_y;
 uniform COMPAT_PRECISION float subpixel_config;
 uniform COMPAT_PRECISION float fract_scale_y_config;
 uniform COMPAT_PRECISION float fract_scale_y_condition;
-uniform COMPAT_PRECISION float rotated_screen;
 uniform COMPAT_PRECISION float max_shrink_x;
 uniform COMPAT_PRECISION float max_stretch_x;
 uniform COMPAT_PRECISION float rotated_stretch_x;
@@ -88,7 +87,6 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define subpixel_config 1.0
 #define fract_scale_y_config 1.0
 #define fract_scale_y_condition 1.0
-#define rotated_screen 1.0
 #define max_shrink_x 0.8
 #define max_stretch_x 1.25
 #define rotated_stretch_x 1.0
@@ -98,7 +96,7 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define scanlines_width_y 0.3
 #endif
 
-#define isRotatedScreen (OutputSize.y > OutputSize.x && rotated_screen != 0.0)
+#define isRotatedScreen (Rotation != 0 && Rotation != 2)
 
 float floorScaleY(float scale)
 {
@@ -120,15 +118,16 @@ void main()
     gl_Position = MVPMatrix * VertexCoord;
 
     // Calculate constants, same for the whole screen
-    vec2 scale1x = OutputSize / InputSize;
+    float rotationAngle = float(Rotation) * 3.14159265 * 0.5;
+    mat2 rotationMat = mat2(cos(rotationAngle), -sin(rotationAngle), sin(rotationAngle), cos(rotationAngle));
+
+    vec2 scale1x = abs(OutputSize * rotationMat) / InputSize;
     float aspect;
     if (aspect_x * aspect_y > 0.0) {
         aspect = aspect_x / aspect_y;
-    } else if (isRotatedScreen) {
-        vec2 scaleRotated = OutputSize.yx / InputSize.xy;
-        aspect = scaleRotated.x / scaleRotated.y;
     } else {
-        aspect = scale1x.x / scale1x.y;
+        vec2 scale = OutputSize / InputSize;
+        aspect = scale.x / scale.y;
     }
     float intScaleBaseY = floorScaleY(scale1x.y);
     float intScaleBaseYX = isRotatedScreen ? floorScaleY(scale1x.x / aspect * rotated_stretch_x) : floorScaleY(scale1x.x / (aspect * max_shrink_x));
@@ -141,7 +140,7 @@ void main()
     vec2 finalScale = (scaleDesired.x * max_stretch_x >= scaleFullWidth.x) ? scaleFullWidth : scaleDesired;
     vec2 textureScale = 1.00001 * scale1x / finalScale;
 
-    vec2 centerOffset = floor((OutputSize / finalScale - InputSize) * 0.5) / TextureSize;
+    vec2 centerOffset = floor((abs(OutputSize * rotationMat) / finalScale - InputSize) * 0.5) / TextureSize;
 
     vec2 scanlinesEnabled = step(vec2(2.0, 2.0), finalScale); // Disable scalnines if scaling is < 2x.
     vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * scanlinesEnabled;
@@ -164,16 +163,9 @@ void main()
     } else if (subpixel_config == 4.0) {
         subpixelDirection = vec2(0.0, 0.333333333) * outPixelSize;
     }
+    subpixelDirection *= rotationMat;
     subpixelDirection *= blurDirection;
     blurDirection *= outPixelSize * 0.66666666;
-
-    if (isRotatedScreen) {
-        if (rotated_screen == 1.0) {
-            subpixelDirection *= mat2(0.0, -1.0, 1.0, 0.0);
-        } else {
-            subpixelDirection *= mat2(0.0, 1.0, -1.0, 0.0);
-        }
-    }
 
     // Transformations
     vec2 finalPosition = TexCoord.xy * textureScale - centerOffset;
