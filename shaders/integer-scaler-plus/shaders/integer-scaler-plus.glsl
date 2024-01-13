@@ -56,7 +56,6 @@ COMPAT_VARYING vec2 InPixelSize;
 COMPAT_VARYING vec2 OutPixelSize;
 // out variables go here as COMPAT_VARYING whatever
 
-vec4 _oPosition1;
 uniform mat4 MVPMatrix;
 uniform COMPAT_PRECISION int FrameDirection;
 uniform COMPAT_PRECISION int FrameCount;
