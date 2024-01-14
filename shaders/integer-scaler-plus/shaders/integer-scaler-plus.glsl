@@ -56,13 +56,13 @@ COMPAT_VARYING vec2 InPixelSize;
 COMPAT_VARYING vec2 OutPixelSize;
 // out variables go here as COMPAT_VARYING whatever
 
-vec4 _oPosition1;
 uniform mat4 MVPMatrix;
 uniform COMPAT_PRECISION int FrameDirection;
 uniform COMPAT_PRECISION int FrameCount;
 uniform COMPAT_PRECISION vec2 OutputSize;
 uniform COMPAT_PRECISION vec2 TextureSize;
 uniform COMPAT_PRECISION vec2 InputSize;
+uniform COMPAT_PRECISION int Rotation;
 
 // compatibility #defines
 #define vTexCoord TEX0.xy
@@ -99,7 +99,7 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define scanlines_width_y 0.3
 #endif
 
-#define isRotatedScreen (OutputSize.y > OutputSize.x && rotated_screen != 0.0)
+#define isRotatedScreen ((Rotation != 0 && Rotation != 2) || (OutputSize.y > OutputSize.x && rotated_screen != 0.0))
 
 float floorScaleY(float scale)
 {
@@ -121,15 +121,20 @@ void main()
     gl_Position = MVPMatrix * VertexCoord;
 
     // Calculate constants, same for the whole screen
+    int rotation = Rotation;
+    if (rotation == 0 && isRotatedScreen) { // Hack for systems which doesn't provide Rotation
+        rotation = (rotated_screen > 1.5) ? 3 : 1;
+    }
+    float rotationAngle = float(rotation) * 3.14159265 * 0.5;
+    mat2 rotationMat = mat2(cos(rotationAngle), -sin(rotationAngle), sin(rotationAngle), cos(rotationAngle));
+
     vec2 scale1x = OutputSize / InputSize;
     float aspect;
     if (aspect_x * aspect_y > 0.0) {
         aspect = aspect_x / aspect_y;
-    } else if (isRotatedScreen) {
-        vec2 scaleRotated = OutputSize.yx / InputSize.xy;
-        aspect = scaleRotated.x / scaleRotated.y;
     } else {
-        aspect = scale1x.x / scale1x.y;
+        vec2 scaleRotated = abs(OutputSize * rotationMat) / InputSize;
+        aspect = scaleRotated.x / scaleRotated.y;
     }
     float intScaleBaseY = floorScaleY(scale1x.y);
     float intScaleBaseYX = isRotatedScreen ? floorScaleY(scale1x.x / aspect * rotated_stretch_x) : floorScaleY(scale1x.x / (aspect * max_shrink_x));
@@ -165,16 +170,9 @@ void main()
     } else if (subpixel_config == 4.0) {
         subpixelDirection = vec2(0.0, 0.333333333) * outPixelSize;
     }
+    subpixelDirection *= rotationMat;
     subpixelDirection *= blurDirection;
     blurDirection *= outPixelSize * 0.66666666;
-
-    if (isRotatedScreen) {
-        if (rotated_screen == 1.0) {
-            subpixelDirection *= mat2(0.0, -1.0, 1.0, 0.0);
-        } else {
-            subpixelDirection *= mat2(0.0, 1.0, -1.0, 0.0);
-        }
-    }
 
     // Transformations
     vec2 finalPosition = TexCoord.xy * textureScale - centerOffset;
