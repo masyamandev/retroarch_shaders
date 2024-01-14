@@ -102,8 +102,9 @@ I'm not sure how many people use external displays on these devices, so I'll not
 
 ## Some games are started with a black screen
 
-I noticed this in some vertical screen arcades, e.g. `1941: Counter Attack`. I don't know the solution yet.
+I noticed this in some vertical screen arcades, e.g. `1941: Counter Attack`.
 Workaround is a Quick Menu -> Shaders -> Apply Changes.
+For permanent fix you can edit file config file `/system/configs/retroarch` on volume `SHARE` and set option `video_shader_delay = "20"`.
 
 # License
 
