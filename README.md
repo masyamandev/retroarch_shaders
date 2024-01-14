@@ -93,8 +93,8 @@ in Shader Settings, but that may need to be configured per system.
 
 Related issues could be:
 - Incorrect aspect ratio if core trims pixels, e.g. truncated 8 pixels from left and 8 pixels prom right in NES games (fixed by shader profile for NES).
-- Incorrect aspect ratio in extremely non-square pixels, e.g. Arcade Battletoads is rendered in 512x224 resulting squeezed image (workaround is to manually set 5x8 Pixel Aspect Ratio).
-- Incorrect aspect ratio on external monitor or running on non-4/3 Screen device.
+- Incorrect aspect ratio in extremely non-square pixels, e.g. Arcade Battletoads is rendered in 512x224 resulting squeezed image (workaround is to manually set 5x8 Pixel Aspect Ratio or use Full Screen Aspect Ratio).
+- Incorrect aspect ratio on external monitor or running on non-4/3 Screen device (workaround is to force 4/3 output).
 
 ## No options for automatic switching subpixel configuration on external display
 
@@ -105,6 +105,12 @@ I'm not sure how many people use external displays on these devices, so I'll not
 I noticed this in some vertical screen arcades, e.g. `1941: Counter Attack`.
 Workaround is a Quick Menu -> Shaders -> Apply Changes.
 For permanent fix you can edit file config file `/system/configs/retroarch` on volume `SHARE` and set option `video_shader_delay = "20"`.
+
+## Incorrect subpixel antialiasing on rotated screen
+
+Some devices (like Anbernic RG ARC) doesn't provide correct value for `Rotation` for vertical screen games. There is a workaround to detect such cases, 
+but there is no way to get a direction of rotation. Parameter `rotated_screen` can be used to detect unset rotation, but direction of a rotation
+(CW or CCW) should be selected per game unless subpixel aliasing is switched off.
 
 # License
 
