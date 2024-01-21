@@ -86,6 +86,10 @@ psx:
 colecovision:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
 # Computers
+c64:
+  shader: integer-scaler-plus/integer-scaler-plus-no-scanlines-fullscreen
+dos:
+  shader: integer-scaler-plus/integer-scaler-plus-no-scanlines-fullscreen
 msx:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
 msx1:
@@ -93,11 +97,11 @@ msx1:
 msx2:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
 amiga:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+  shader: integer-scaler-plus/integer-scaler-plus-no-scanlines-fullscreen
 amstradcpc:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+  shader: integer-scaler-plus/integer-scaler-plus-no-scanlines-fullscreen
 atarist:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+  shader: integer-scaler-plus/integer-scaler-plus-no-scanlines-fullscreen
 zxspectrum:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
 odyssey2:
@@ -107,4 +111,4 @@ zx81:
 pcfx:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
 x68000:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-full
+  shader: integer-scaler-plus/integer-scaler-plus-no-scanlines-fullscreen
