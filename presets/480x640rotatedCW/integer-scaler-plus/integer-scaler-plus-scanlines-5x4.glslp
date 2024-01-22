@@ -10,5 +10,6 @@ scanlines_width_y = 0.3
 scanlines_width_x = 0.0
 max_shrink_x = 1.0
 max_stretch_x = 1.0
+aspect_type = 0.0
 aspect_x = 5.0
 aspect_y = 4.0

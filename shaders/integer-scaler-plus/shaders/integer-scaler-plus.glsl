@@ -15,8 +15,9 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
 #pragma parameter rotated_stretch_x "Stretch output X in rotated screen" 1.0 1.0 2.0 0.05
 #pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
-#pragma parameter aspect_x "Pixel Aspect Ratio X (0:output_ratio)" 5.0 0.0 256. 1.0
-#pragma parameter aspect_y "Pixel Aspect Ratio Y (0:output_ratio)" 5.0 0.0 256. 1.0
+#pragma parameter aspect_type "Aspect Ratio type (0:pixel;1:screen,2:full_scrn)" 1.0 0.0 2.0 1.0
+#pragma parameter aspect_x "Aspect Ratio X" 5.0 1.0 256. 1.0
+#pragma parameter aspect_y "Aspect Ratio Y" 5.0 1.0 256. 1.0
 #pragma parameter scanlines_brightness "Scanlines brightness" 0.85 0.0 1.0 0.01
 #pragma parameter scanlines_width_y "Scanlines horizontal thickness" 0.3 0.0 0.5 0.1
 #pragma parameter scanlines_width_x "Scanlines vertical thickness" 0.0 0.0 0.5 0.1
@@ -70,6 +71,7 @@ uniform COMPAT_PRECISION int Rotation;
 #define OutSize vec4(OutputSize, 1.0 / OutputSize)
 
 #ifdef PARAMETER_UNIFORM
+uniform COMPAT_PRECISION float aspect_type;
 uniform COMPAT_PRECISION float aspect_x;
 uniform COMPAT_PRECISION float aspect_y;
 uniform COMPAT_PRECISION float subpixel_config;
@@ -84,6 +86,7 @@ uniform COMPAT_PRECISION float scanlines_brightness;
 uniform COMPAT_PRECISION float scanlines_width_x;
 uniform COMPAT_PRECISION float scanlines_width_y;
 #else
+#define aspect_type 1.0
 #define aspect_x 64.0
 #define aspect_y 64.0
 #define subpixel_config 1.0
@@ -130,8 +133,11 @@ void main()
 
     vec2 scale1x = OutputSize / InputSize;
     float aspect;
-    if (aspect_x * aspect_y > 0.0) {
+    if (aspect_type == 0.0) {
         aspect = aspect_x / aspect_y;
+    } else if (aspect_type == 1.0) {
+        vec2 scaleRotated = vec2(aspect_x, aspect_y) / InputSize;
+        aspect = scaleRotated.x / scaleRotated.y;
     } else {
         vec2 scaleRotated = abs(OutputSize * rotationMat) / InputSize;
         aspect = scaleRotated.x / scaleRotated.y;

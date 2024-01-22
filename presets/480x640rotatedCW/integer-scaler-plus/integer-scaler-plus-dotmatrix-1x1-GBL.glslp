@@ -13,6 +13,7 @@ scanlines_color_g = 0.85
 scanlines_color_b = 0.92
 max_shrink_x = 1.0
 max_stretch_x = 1.0
+aspect_type = 0.0
 aspect_x = 5.0
 aspect_y = 5.0
 offscreen_texture = 7.0
