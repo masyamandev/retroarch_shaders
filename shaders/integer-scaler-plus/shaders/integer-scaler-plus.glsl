@@ -7,15 +7,14 @@ Author: Oleksandr Maksymenko
 https://github.com/masyamandev/retroarch_shaders
 */
 
-#pragma parameter subpixel_config "Subpixel config: 0:None,1:RGB,2:BGR,3:RGBv,4:BGRv" 1.0 0.0 4.0 1.0
+#pragma parameter subpixel_config "Subpixel config: 0:None,1:RGB,2:BGR,3:RGBv,4:BGRv" 0.0 0.0 4.0 1.0
 #pragma parameter fract_scale_y_config "Fractional scale Y (0:no,1:1/2,2:1/3,3:1/6,4:any)" 1.0 0.0 4.0 1.0
 #pragma parameter fract_scale_y_condition "Fractional scale Y (0:never,1:rotated_scrn,2:always)" 1.0 0.0 2.0 1.0
 #pragma parameter rotated_screen "Treat Y > X as (0:normal,1:rotated_CW,2:rotated_CCW)" 1.0 0.0 2.0 1.0
-#pragma parameter max_shrink_x "Max shrink X to fit screen width" 0.8 0.5 1.0 0.05
-#pragma parameter max_stretch_x "Max stretch X to fit screen width" 1.25 1.0 1.5 0.05
+#pragma parameter max_shrink_x "Max shrink X" 0.8 0.5 1.0 0.05
+#pragma parameter max_stretch_x "Max stretch X" 1.25 1.0 1.5 0.05
 #pragma parameter rotated_stretch_x "Stretch output X in rotated screen" 1.0 1.0 2.0 0.05
-#pragma parameter int_scale_shrink_x "Max shrink X for int scale" 0.9 0.5 1.0 0.01
-#pragma parameter aspect_type "Aspect Ratio type (0:pixel;1:screen,2:full_scrn)" 1.0 0.0 2.0 1.0
+#pragma parameter aspect_type "Aspect Ratio type (0:pixel;1:screen,2:full_scrn)" 0.0 0.0 2.0 1.0
 #pragma parameter aspect_x "Aspect Ratio X" 5.0 1.0 256. 1.0
 #pragma parameter aspect_y "Aspect Ratio Y" 5.0 1.0 256. 1.0
 #pragma parameter scanlines_brightness "Scanlines brightness" 0.85 0.0 1.0 0.01
@@ -81,7 +80,6 @@ uniform COMPAT_PRECISION float rotated_screen;
 uniform COMPAT_PRECISION float max_shrink_x;
 uniform COMPAT_PRECISION float max_stretch_x;
 uniform COMPAT_PRECISION float rotated_stretch_x;
-uniform COMPAT_PRECISION float int_scale_shrink_x;
 uniform COMPAT_PRECISION float scanlines_brightness;
 uniform COMPAT_PRECISION float scanlines_width_x;
 uniform COMPAT_PRECISION float scanlines_width_y;
@@ -96,7 +94,6 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define max_shrink_x 0.8
 #define max_stretch_x 1.25
 #define rotated_stretch_x 1.0
-#define int_scale_shrink_x 0.9
 #define scanlines_brightness 0.85
 #define scanlines_width_x 0.0
 #define scanlines_width_y 0.3
@@ -145,12 +142,13 @@ void main()
     float intScaleBaseY = floorScaleY(scale1x.y);
     float intScaleBaseYX = isRotatedScreen ? floorScaleY(scale1x.x / aspect * rotated_stretch_x) : floorScaleY(scale1x.x / (aspect * max_shrink_x));
     float scaleBaseY = min(intScaleBaseY, intScaleBaseYX);
-    vec2 scaleDesired = vec2(aspect * scaleBaseY, scaleBaseY);
-    vec2 scaleFullWidth = vec2(scale1x.x, scaleBaseY);
-    if (floor(scaleFullWidth.x) / scaleFullWidth.x >= int_scale_shrink_x) {
-        scaleFullWidth = vec2(floor(scaleFullWidth.x), scaleBaseY);
+    float scaleDesiredX = aspect * scaleBaseY;
+    float scaleFullWidthX = min(scale1x.x, ceil(scaleDesiredX));
+    if (floor(scaleFullWidthX) >= scaleDesiredX * max_shrink_x) {
+        scaleFullWidthX = floor(scaleFullWidthX);
     }
-    vec2 finalScale = (scaleDesired.x * max_stretch_x >= scaleFullWidth.x) ? scaleFullWidth : scaleDesired;
+    float finalScaleX = (scaleDesiredX * max_stretch_x >= scaleFullWidthX) ? scaleFullWidthX : scaleDesiredX;
+    vec2 finalScale = vec2(finalScaleX, scaleBaseY);
     vec2 textureScale = 1.00001 * scale1x / finalScale;
 
     vec2 centerOffset = floor((OutputSize / finalScale - InputSize) * 0.5) / TextureSize;
@@ -315,8 +313,9 @@ vec3 offScreenTexture(vec2 pos)
 
 
 vec3 getSmoothPixel(vec2 pos) {
-    vec2 leftTopCornerOfPixel = floor(pos / InPixelSize) * InPixelSize;
-    vec2 rightBotCornerOfPixel = leftTopCornerOfPixel + InPixelSize;
+    float pixelShrink = 0.0;
+    vec2 leftTopCornerOfPixel = floor(pos / InPixelSize) * InPixelSize + InPixelSize * pixelShrink;
+    vec2 rightBotCornerOfPixel = leftTopCornerOfPixel + InPixelSize - InPixelSize * pixelShrink;
 
     vec2 scanlinesPoint = leftTopCornerOfPixel + (rightBotCornerOfPixel - leftTopCornerOfPixel) * ScanlineWidth;
     if (scanlinesPoint.x < pos.x) {
@@ -336,19 +335,28 @@ vec3 getSmoothPixel(vec2 pos) {
     vec2 leftTopPixelSize = leftTopCornerOfPixel - (pos - BlurDirection);
     vec2 rightBotPixelSize = (pos + BlurDirection) - rightBotCornerOfPixel;
 
-    vec3 color =
+    vec3 colorOut =
         pixel(Source, pos + vec2(-BlurDirection.x, -BlurDirection.y)) * leftTopPixelSize.x * leftTopPixelSize.y +
         pixel(Source, pos + vec2(0.0, -BlurDirection.y)) * centralPixelSize.x * leftTopPixelSize.y +
         pixel(Source, pos + vec2(BlurDirection.x, -BlurDirection.y)) * rightBotPixelSize.x * leftTopPixelSize.y +
     
         pixel(Source, pos + vec2(-BlurDirection.x, 0.0)) * leftTopPixelSize.x * centralPixelSize.y +
-        pixel(Source, pos) * centralPixelSize.x * centralPixelSize.y +
         pixel(Source, pos + vec2(BlurDirection.x, 0.0)) * rightBotPixelSize.x * centralPixelSize.y +
     
         pixel(Source, pos + vec2(-BlurDirection.x, BlurDirection.y)) * leftTopPixelSize.x * rightBotPixelSize.y +
         pixel(Source, pos + vec2(0.0, BlurDirection.y)) * centralPixelSize.x * rightBotPixelSize.y +
         pixel(Source, pos + vec2(BlurDirection.x, BlurDirection.y)) * rightBotPixelSize.x * rightBotPixelSize.y
     ;
+
+    float totalArea = BlurDirection.x * BlurDirection.y * 4.0;
+    float centerArea = centralPixelSize.x * centralPixelSize.y;
+    float outerArea = max(totalArea - centerArea, totalArea * 0.001);
+
+    vec3 colorCenter = pixel(Source, pos) * centerArea;
+
+//    vec3 color = colorOut + colorCenter;
+    vec3 color = mix(colorOut / outerArea, colorCenter / centerArea, centerArea / totalArea) * totalArea;
+//    vec3 color = (colorCenter / centerArea) * totalArea;
 
     color /= BlurDirection.x * BlurDirection.y * 4.0;
     

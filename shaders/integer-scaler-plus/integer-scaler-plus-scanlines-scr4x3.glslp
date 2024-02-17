@@ -1,0 +1,16 @@
+shaders = 1
+
+shader0 = shaders/integer-scaler-plus.glsl
+filter_linear0 = false
+scale_type0 = viewport
+
+scanlines_brightness = 0.85
+scanlines_width_y = 0.3
+scanlines_width_x = 0.0
+fract_scale_y_config = 4.0
+fract_scale_y_condition = 1.0
+max_shrink_x = 0.9
+max_stretch_x = 1.1
+aspect_type = 1.0
+aspect_x = 4.0
+aspect_y = 3.0
