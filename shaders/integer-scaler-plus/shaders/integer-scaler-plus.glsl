@@ -23,6 +23,7 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter scanlines_color_r "Scanlines Color Red" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_g "Scanlines Color Green" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_b "Scanlines Color Blue" 0.0 0.0 1.0 0.01
+#pragma parameter wobbly_scanlines "Wobbly Scanlines (for non-int scale)" 0.0 0.0 1.0 0.05
 #pragma parameter offscreen_texture "Offscreen texture pattern" 1.0 0.0 7.0 1.0
 
 
@@ -155,6 +156,8 @@ void main()
 
     vec2 scanlinesEnabled = step(vec2(2.0, 2.0), finalScale); // Disable scalnines if scaling is < 2x.
     vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * scanlinesEnabled;
+//    vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * vec2(1.333333333, 1.333333333) * scanlinesEnabled;
+//    vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * vec2(0.666666666, 0.666666666) * scanlinesEnabled;
     vec2 scanlineWidthAdjusted = 1.0 - scalnineWidthPixels / finalScale;
     float scanlineBrightArea = scanlineWidthAdjusted.x * scanlineWidthAdjusted.y;
     float scanlineRemainingBrightness = max(scanlines_brightness - scanlineBrightArea, 0.0);
@@ -174,6 +177,7 @@ void main()
     } else if (subpixel_config == 4.0) {
         subpixelDirection = vec2(0.0, 0.333333333) * outPixelSize;
     }
+//    subpixelDirection = vec2(0.333333333, 0.333333333) * outPixelSize; // TODO
     subpixelDirection *= rotationMat;
     subpixelDirection *= blurDirection;
     blurDirection *= outPixelSize * 0.66666666;
@@ -234,11 +238,13 @@ uniform COMPAT_PRECISION float offscreen_texture;
 uniform COMPAT_PRECISION float scanlines_color_r;
 uniform COMPAT_PRECISION float scanlines_color_g;
 uniform COMPAT_PRECISION float scanlines_color_b;
+uniform COMPAT_PRECISION float wobbly_scanlines;
 #else
 #define offscreen_texture 1.0
 #define scanlines_color_r 0.0
 #define scanlines_color_g 0.0
 #define scanlines_color_b 0.0
+#define wobbly_scanlines 0.0
 #endif
 
 // compatibility #defines
@@ -366,15 +372,20 @@ vec3 getSmoothPixel(vec2 pos) {
 void main()
 {
     vec2 screenSize = InputSize / TextureSize;
+    vec2 coord = vTexCoord.xy;
 
-    if (vTexCoord.x < 0.0 || vTexCoord.x > screenSize.x || vTexCoord.y < 0.0 || vTexCoord.y > screenSize.y) {
-        vec3 pix = offScreenTexture(vTexCoord);
+    if (coord.x < 0.0 || coord.x > screenSize.x || coord.y < 0.0 || coord.y > screenSize.y) {
+        vec3 pix = offScreenTexture(coord);
 	    FragColor = vec4(pix, 1.0);
         return;
     }
 
+    vec2 inPixel = sin((vTexCoord / InPixelSize - (1.0 - ScanlineWidth) * InPixelSize) * 3.141592 * 2.0);
+    coord += OutPixelSize * inPixel.yx * inPixel.yx * wobbly_scanlines;
+    coord = clamp(coord, vec2(0.0, 0.0), screenSize);
+
 //    vec2 subpixelDirection = - SubpixelDirection;
-//    if (false && fract(floor(vTexCoord.y / OutPixelSize.y) * 0.5) == 0.0)
+//    if (false && fract(floor(coord.y / OutPixelSize.y) * 0.5) == 0.0)
 //    {
 //        subpixelDirection *= -1.0;
 //    }
@@ -383,17 +394,17 @@ void main()
 //        subpixelDirection *= -1.0;
 //    }
 //
-//    vec3 color0 = pixel(Source, vTexCoord - subpixelDirection * 2.5);
-//    vec3 color1 = pixel(Source, vTexCoord - subpixelDirection * 2.0);
-//    vec3 color2 = pixel(Source, vTexCoord - subpixelDirection * 1.5);
-//    vec3 color3 = pixel(Source, vTexCoord - subpixelDirection * 1.0);
-//    vec3 color4 = pixel(Source, vTexCoord - subpixelDirection * 0.5);
-//    vec3 color5 = pixel(Source, vTexCoord);
-//    vec3 color6 = pixel(Source, vTexCoord + subpixelDirection * 0.5);
-//    vec3 color7 = pixel(Source, vTexCoord + subpixelDirection * 1.0);
-//    vec3 color8 = pixel(Source, vTexCoord + subpixelDirection * 1.5);
-//    vec3 color9 = pixel(Source, vTexCoord + subpixelDirection * 2.0);
-//    vec3 colorA = pixel(Source, vTexCoord + subpixelDirection * 2.5);
+//    vec3 color0 = pixel(Source, coord - subpixelDirection * 2.5);
+//    vec3 color1 = pixel(Source, coord - subpixelDirection * 2.0);
+//    vec3 color2 = pixel(Source, coord - subpixelDirection * 1.5);
+//    vec3 color3 = pixel(Source, coord - subpixelDirection * 1.0);
+//    vec3 color4 = pixel(Source, coord - subpixelDirection * 0.5);
+//    vec3 color5 = pixel(Source, coord);
+//    vec3 color6 = pixel(Source, coord + subpixelDirection * 0.5);
+//    vec3 color7 = pixel(Source, coord + subpixelDirection * 1.0);
+//    vec3 color8 = pixel(Source, coord + subpixelDirection * 1.5);
+//    vec3 color9 = pixel(Source, coord + subpixelDirection * 2.0);
+//    vec3 colorA = pixel(Source, coord + subpixelDirection * 2.5);
 //
 //    vec3 color = vec3(
 //            color0.r + color1.r + color2.r + color3.r + color4.r + color5.r + color6.r,
@@ -402,9 +413,9 @@ void main()
 //        ) / 7.0;
 
     vec3 color = vec3(
-        getSmoothPixel(vTexCoord + SubpixelDirection).r,
-        getSmoothPixel(vTexCoord).g,
-        getSmoothPixel(vTexCoord - SubpixelDirection).b
+        getSmoothPixel(coord + SubpixelDirection).r,
+        getSmoothPixel(coord).g,
+        getSmoothPixel(coord - SubpixelDirection).b
     );
 
     FragColor = vec4(color, 1.0);

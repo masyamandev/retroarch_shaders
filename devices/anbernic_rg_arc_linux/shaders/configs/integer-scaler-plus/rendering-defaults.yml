@@ -11,7 +11,7 @@ nes:
 n64:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
 gba:
-  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-full
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-full-wobbly
 gb:
   shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-pxl1x1-DMG
 gbc:
@@ -28,7 +28,7 @@ mastersystem:
 megadrive:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
 gamegear:
-  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-pxl6x5
+  shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-pxl6x5-wobbly
 sega32x:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
 segacd:
