@@ -1,3 +1,6 @@
+# Used for GBA to display it in full screen 4/3 mode with incorrect aspect ratio.
+# May look slightly better comparing to correct 3/2 ratio due to integer scale on vertical axis.
+
 shaders = 1
 
 shader0 = shaders/integer-scaler-plus.glsl

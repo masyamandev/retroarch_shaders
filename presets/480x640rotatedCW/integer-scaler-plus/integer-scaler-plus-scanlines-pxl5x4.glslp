@@ -1,3 +1,6 @@
+# Shader preset for scanlined image with 5/4 pixels. Typical use case is to stretch 256x240 to 640x480 like in NES or SNES.
+# This preset is preferred over the generic scr4x3 for NES if a core removes 8 pixels from left and right to hide artifacts.
+
 shaders = 1
 
 shader0 = shaders/integer-scaler-plus.glsl

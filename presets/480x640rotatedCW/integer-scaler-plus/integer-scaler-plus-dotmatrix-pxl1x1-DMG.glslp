@@ -1,3 +1,5 @@
+# Shader preset for dot-matrix displays with square pixels with Original Game Boy colored scan lines
+
 shaders = 1
 
 shader0 = shaders/integer-scaler-plus.glsl

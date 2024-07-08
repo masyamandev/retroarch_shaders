@@ -1,3 +1,5 @@
+# Generic shader preset for non-scanline images. Used for stretching 320x200 to 640x480 display.
+
 shaders = 1
 
 shader0 = shaders/integer-scaler-plus.glsl

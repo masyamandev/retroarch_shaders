@@ -1,3 +1,5 @@
+# Generic shader preset for scanlined image stretched to 4/3 display.
+
 shaders = 1
 
 shader0 = shaders/integer-scaler-plus.glsl

@@ -1,3 +1,6 @@
+# Specific shader preset for vertical-oriented arcade games to horizontal 4/3 screen with horizontal 2x scale and shrink it vertically.
+# Make images squarish and adds scanline effect.
+
 shaders = 1
 
 shader0 = shaders/integer-scaler-plus.glsl
