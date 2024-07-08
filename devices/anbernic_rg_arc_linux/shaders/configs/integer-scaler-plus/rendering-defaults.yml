@@ -5,7 +5,7 @@ default:
   # scanline affect fba2x
   scanline: false
 snes:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl5x4
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
 nes:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl5x4
 n64:
