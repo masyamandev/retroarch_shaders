@@ -23,7 +23,6 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter scanlines_color_r "Scanlines Color Red" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_g "Scanlines Color Green" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_b "Scanlines Color Blue" 0.0 0.0 1.0 0.01
-#pragma parameter wobbly_scanlines "Wobbly Scanlines (for non-int scale)" 0.0 0.0 1.0 0.05
 #pragma parameter offscreen_texture "Offscreen texture pattern" 1.0 0.0 7.0 1.0
 
 
@@ -238,13 +237,11 @@ uniform COMPAT_PRECISION float offscreen_texture;
 uniform COMPAT_PRECISION float scanlines_color_r;
 uniform COMPAT_PRECISION float scanlines_color_g;
 uniform COMPAT_PRECISION float scanlines_color_b;
-uniform COMPAT_PRECISION float wobbly_scanlines;
 #else
 #define offscreen_texture 1.0
 #define scanlines_color_r 0.0
 #define scanlines_color_g 0.0
 #define scanlines_color_b 0.0
-#define wobbly_scanlines 0.0
 #endif
 
 // compatibility #defines
@@ -381,7 +378,6 @@ void main()
     }
 
     vec2 inPixel = sin((vTexCoord / InPixelSize - (1.0 - ScanlineWidth) * InPixelSize) * 3.141592 * 2.0);
-    coord += OutPixelSize * inPixel.yx * inPixel.yx * wobbly_scanlines;
     coord = clamp(coord, vec2(0.0, 0.0), screenSize);
 
 //    vec2 subpixelDirection = - SubpixelDirection;
