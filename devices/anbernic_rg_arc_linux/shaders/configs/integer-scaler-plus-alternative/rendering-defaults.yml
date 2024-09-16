@@ -1,14 +1,20 @@
 ## Integer scale when possible
-## Alternative version for GBA, GB, GG, Arcade
+# Alternative version for:
+# - NES & SNES: use square pixels resulting to crisper image but bigger bezels.
+# - Megadrive, CD, 32x: use square pixels so 256x224 games have crisper image but bigger bezels.
+# - GBA: use correct 3x2 aspect ratio. Default config renders GBA in 4x3 as it looks better due to integer scale Y.
+# - GB: use black scanlines instead of original DMG colors.
+# - GG: use 10x9 aspect ratio with square pixels similar to GB instead of 4x3 which actual device had.
+# - Arcade: for vertical games make screen wider so it has 2x horizontal scaling resulting to square-ish screen.
 default:
   # shader affects retroarch shaders
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
   # scanline affect fba2x
   scanline: false
 snes:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl1x1
 nes:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl5x4
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl1x1
 n64:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
 gba:
@@ -18,7 +24,7 @@ gb:
 gbc:
   shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-pxl1x1
 fds:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl5x4
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl1x1
 virtualboy:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
 # Sega
@@ -27,13 +33,13 @@ sg1000:
 mastersystem:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl1x1
 megadrive:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl1x1
 gamegear:
   shader: integer-scaler-plus/integer-scaler-plus-dotmatrix-pxl1x1
 sega32x:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl1x1
 segacd:
-  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-pxl1x1
 # Arcade
 neogeo:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3
@@ -44,6 +50,14 @@ mame:
 hbmame:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3-rotated-square
 fba:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3-rotated-square
+fbneo:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3-rotated-square
+cps1:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3-rotated-square
+cps2:
+  shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3-rotated-square
+cps3:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3-rotated-square
 naomi:
   shader: integer-scaler-plus/integer-scaler-plus-scanlines-scr4x3-rotated-square
