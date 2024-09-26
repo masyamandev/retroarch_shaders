@@ -112,6 +112,13 @@ Some devices (like Anbernic RG ARC) doesn't provide correct value for `Rotation`
 but there is no way to get a direction of rotation. Parameter `rotated_screen` can be used to detect unset rotation, but direction of a rotation
 (CW or CCW) should be selected per game unless subpixel aliasing is switched off.
 
+## No options to crop image for perfect integer scale
+
+E.g. R-Type for PC Engine / TurboGrafx-16 is rendered in 336x240. Currently, there is no options to trim 8 pixels from left and 8 pixels from right 
+to get 320x240 and do 2x zoom to get integer scaled image. So the shader shrinks image horizontally making image slightly blurry.
+Another possible issue with PC Engine / TurboGrafx-16 is maximal resolution could be up to 512×242 and this vertical resolution
+can't be scaled nicely to 480p screen unless 2 scanlines are trimmed. There is no such option now. However I can't find any game which is rendered in 242p.
+
 # License
 
 Provided as is without any warranty.
