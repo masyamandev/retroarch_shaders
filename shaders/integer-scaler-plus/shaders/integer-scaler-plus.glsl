@@ -11,6 +11,8 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter fract_scale_y_config "Fractional scale Y (0:no,1:1/2,2:1/3,3:1/6,4:any)" 1.0 0.0 4.0 1.0
 #pragma parameter fract_scale_y_condition "Fractional scale Y (0:never,1:rotated_scrn,2:always)" 1.0 0.0 2.0 1.0
 #pragma parameter rotated_screen "Treat Y > X as (0:normal,1:rotated_CW,2:rotated_CCW)" 1.0 0.0 2.0 1.0
+#pragma parameter max_crop_x "Max crop X pixels" 0.0 0.0 32.0 1.0
+#pragma parameter max_crop_y "Max crop Y pixels" 0.0 0.0 32.0 1.0
 #pragma parameter max_shrink_x "Max shrink X" 0.8 0.5 1.0 0.05
 #pragma parameter max_stretch_x "Max stretch X" 1.25 1.0 1.5 0.05
 #pragma parameter rotated_stretch_x "Stretch output X in rotated screen" 1.0 1.0 2.0 0.05
@@ -77,6 +79,8 @@ uniform COMPAT_PRECISION float subpixel_config;
 uniform COMPAT_PRECISION float fract_scale_y_config;
 uniform COMPAT_PRECISION float fract_scale_y_condition;
 uniform COMPAT_PRECISION float rotated_screen;
+uniform COMPAT_PRECISION float max_crop_x;
+uniform COMPAT_PRECISION float max_crop_y;
 uniform COMPAT_PRECISION float max_shrink_x;
 uniform COMPAT_PRECISION float max_stretch_x;
 uniform COMPAT_PRECISION float rotated_stretch_x;
@@ -91,6 +95,8 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define fract_scale_y_config 1.0
 #define fract_scale_y_condition 1.0
 #define rotated_screen 1.0
+#define max_crop_x 0.0
+#define max_crop_y 0.0
 #define max_shrink_x 0.8
 #define max_stretch_x 1.25
 #define rotated_stretch_x 1.0
@@ -129,6 +135,7 @@ void main()
     mat2 rotationMat = mat2(cos(rotationAngle), -sin(rotationAngle), sin(rotationAngle), cos(rotationAngle));
 
     vec2 scale1x = OutputSize / InputSize;
+    vec2 scale1xOverscan = OutputSize / (InputSize - vec2(max_crop_x, max_crop_y));
     float aspect;
     if (aspect_type == 0.0) {
         aspect = aspect_x / aspect_y;
@@ -139,11 +146,11 @@ void main()
         vec2 scaleRotated = abs(OutputSize * rotationMat) / InputSize;
         aspect = scaleRotated.x / scaleRotated.y;
     }
-    float intScaleBaseY = floorScaleY(scale1x.y);
-    float intScaleBaseYX = isRotatedScreen ? floorScaleY(scale1x.x / aspect * rotated_stretch_x) : floorScaleY(scale1x.x / (aspect * max_shrink_x));
+    float intScaleBaseY = floorScaleY(scale1xOverscan.y);
+    float intScaleBaseYX = isRotatedScreen ? floorScaleY(scale1x.x / aspect * rotated_stretch_x) : floorScaleY(max(scale1x.x / (aspect * max_shrink_x), scale1xOverscan.x / aspect));
     float scaleBaseY = min(intScaleBaseY, intScaleBaseYX);
     float scaleDesiredX = aspect * scaleBaseY;
-    float scaleFullWidthX = min(scale1x.x, ceil(scaleDesiredX));
+    float scaleFullWidthX = min(max(scale1x.x, floor(scale1xOverscan.x)), ceil(scaleDesiredX));
     if (floor(scaleFullWidthX) >= scaleDesiredX * max_shrink_x) {
         scaleFullWidthX = floor(scaleFullWidthX);
     }
