@@ -18,4 +18,5 @@ max_stretch_x = 1.0
 aspect_type = 0.0
 aspect_x = 5.0
 aspect_y = 5.0
-offscreen_texture = 7.0
+offscreen_frame = 1.0
+offscreen_texture = 3.0

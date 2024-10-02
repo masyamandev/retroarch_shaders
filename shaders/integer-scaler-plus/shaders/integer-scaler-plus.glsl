@@ -25,7 +25,8 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter scanlines_color_r "Scanlines Color Red" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_g "Scanlines Color Green" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_b "Scanlines Color Blue" 0.0 0.0 1.0 0.01
-#pragma parameter offscreen_texture "Offscreen texture pattern" 1.0 0.0 7.0 1.0
+#pragma parameter offscreen_frame "Offscreen frame type" 0.0 0.0 1.0 1.0
+#pragma parameter offscreen_texture "Offscreen background pattern" 1.0 0.0 3.0 1.0
 
 
 #if defined(VERTEX)
@@ -241,11 +242,13 @@ COMPAT_VARYING vec2 OutPixelSize;
 // in variables go here as COMPAT_VARYING whatever
 
 #ifdef PARAMETER_UNIFORM
+uniform COMPAT_PRECISION float offscreen_frame;
 uniform COMPAT_PRECISION float offscreen_texture;
 uniform COMPAT_PRECISION float scanlines_color_r;
 uniform COMPAT_PRECISION float scanlines_color_g;
 uniform COMPAT_PRECISION float scanlines_color_b;
 #else
+#define offscreen_frame 0.0
 #define offscreen_texture 1.0
 #define scanlines_color_r 0.0
 #define scanlines_color_g 0.0
@@ -289,16 +292,6 @@ vec3 offScreenTexture(vec2 pos)
     float brightness = 0.0;
 
     float pattern = offscreen_texture;
-
-    if (pattern > 3.5) { // 4 pixels of scanlines
-        vec2 expandScanlines = 4.0 * InPixelSize;
-        vec2 screenSize = InputSize / TextureSize;
-        if (pos.x >= -expandScanlines.x && pos.x <= screenSize.x + expandScanlines.x &&
-            pos.y >= -expandScanlines.y && pos.y <= screenSize.y + expandScanlines.y) {
-            return vec3(scanlines_color_r, scanlines_color_g, scanlines_color_b);
-        }
-        pattern -= 4.0;
-    }
 
     if (pattern <= 1.1) {
         if (pattern <= 0.1) { // Pattern 0
@@ -379,13 +372,23 @@ void main()
     vec2 screenSize = InputSize / TextureSize;
     vec2 coord = vTexCoord.xy;
 
-    if (coord.x < 0.0 || coord.x > screenSize.x || coord.y < 0.0 || coord.y > screenSize.y) {
+    vec2 expandScanlines = 4.0 * InPixelSize * offscreen_frame; // Temporary hack while we have only 2 frames
+    vec2 screen = (coord + expandScanlines) / (screenSize + expandScanlines * 2.0) * 2.0 - 1.0;
+
+    vec2 screenAbs = abs(screen);
+    float frameRect = max(screenAbs.x, screenAbs.y);
+
+    if (frameRect > 1.0) {
         vec3 pix = offScreenTexture(coord);
-	    FragColor = vec4(pix, 1.0);
+        FragColor = vec4(pix, 1.0);
+        return;
+    }
+    if (coord.x < 0.0 || coord.x > screenSize.x || coord.y < 0.0 || coord.y > screenSize.y) {
+        FragColor = vec4(scanlines_color_r, scanlines_color_g, scanlines_color_b, 1.0);
         return;
     }
 
-    vec2 inPixel = sin((vTexCoord / InPixelSize - (1.0 - ScanlineWidth) * InPixelSize) * 3.141592 * 2.0);
+//    vec2 inPixel = sin((vTexCoord / InPixelSize - (1.0 - ScanlineWidth) * InPixelSize) * 3.141592 * 2.0);
     coord = clamp(coord, vec2(0.0, 0.0), screenSize);
 
 //    vec2 subpixelDirection = - SubpixelDirection;
