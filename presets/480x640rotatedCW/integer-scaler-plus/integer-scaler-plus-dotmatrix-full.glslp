@@ -1,5 +1,6 @@
 # Used for GBA to display it in full screen 4/3 mode with incorrect aspect ratio.
 # May look slightly better comparing to correct 3/2 ratio due to integer scale on vertical axis.
+# This preset has 8 pixels cropped horizontally sides giving slightly better image quality.
 
 shaders = 1
 
@@ -11,6 +12,7 @@ subpixel_config = 3.0
 scanlines_brightness = 0.85
 scanlines_width_y = 0.1
 scanlines_width_x = 0.1
+max_crop_x = -8.0
 max_shrink_x = 0.8
 max_stretch_x = 1.0
 aspect_type = 0.0
