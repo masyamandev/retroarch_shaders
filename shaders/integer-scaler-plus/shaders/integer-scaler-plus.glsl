@@ -25,7 +25,7 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter scanlines_color_r "Scanlines Color Red" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_g "Scanlines Color Green" 0.0 0.0 1.0 0.01
 #pragma parameter scanlines_color_b "Scanlines Color Blue" 0.0 0.0 1.0 0.01
-#pragma parameter offscreen_frame "Offscreen frame type" 0.0 0.0 1.0 1.0
+#pragma parameter offscreen_frame "Offscreen frame type" 0.0 0.0 2.0 1.0
 #pragma parameter offscreen_texture "Offscreen background pattern" 1.0 0.0 3.0 1.0
 
 
@@ -372,13 +372,28 @@ void main()
     vec2 screenSize = InputSize / TextureSize;
     vec2 coord = vTexCoord.xy;
 
-    vec2 expandScanlines = 4.0 * InPixelSize * offscreen_frame; // Temporary hack while we have only 2 frames
+    vec2 expandScanlines = vec2(0.0, 0.0);
+    if (offscreen_frame == 1.0) {
+        expandScanlines = 4.0 * InPixelSize;
+    }
+
     vec2 screen = (coord + expandScanlines) / (screenSize + expandScanlines * 2.0) * 2.0 - 1.0;
+    vec2 screen2 = screen * screen;
+    vec2 screen4 = screen2 * screen2;
+    vec2 screen8 = screen4 * screen4;
+    vec2 screen16 = screen8 * screen8;
+    vec2 screen32 = screen16 * screen16;
+//    vec2 screen64 = screen32 * screen32;
 
     vec2 screenAbs = abs(screen);
     float frameRect = max(screenAbs.x, screenAbs.y);
 
-    if (frameRect > 1.0) {
+    float roundnessTV = 0.4;
+    float frameTV = (screen32.x + screen32.y) * (1.0 - roundnessTV) + (screen2.x + screen2.y) * roundnessTV;
+
+    float frame = offscreen_frame >= 2.0 ? frameTV : frameRect;
+
+    if (frame > 1.0) {
         vec3 pix = offScreenTexture(coord);
         FragColor = vec4(pix, 1.0);
         return;
