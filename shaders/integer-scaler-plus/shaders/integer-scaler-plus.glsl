@@ -15,6 +15,7 @@ https://github.com/masyamandev/retroarch_shaders
 #pragma parameter max_crop_y "Max crop Y pixels" 0.0 0.0 32.0 4.0
 #pragma parameter max_shrink_x "Max shrink X" 0.8 0.5 1.0 0.05
 #pragma parameter max_stretch_x "Max stretch X" 1.25 1.0 1.5 0.05
+#pragma parameter balanced_non_int "Smooth balanced pixels in non-integer scale" 1.0 0.0 1.0 1.0
 #pragma parameter rotated_stretch_x "Stretch output X in rotated screen" 1.0 1.0 2.0 0.05
 #pragma parameter aspect_type "Aspect Ratio type (0:pixel;1:screen,2:full_scrn)" 0.0 0.0 2.0 1.0
 #pragma parameter aspect_x "Aspect Ratio X" 5.0 1.0 256. 1.0
@@ -84,6 +85,7 @@ uniform COMPAT_PRECISION float max_crop_x;
 uniform COMPAT_PRECISION float max_crop_y;
 uniform COMPAT_PRECISION float max_shrink_x;
 uniform COMPAT_PRECISION float max_stretch_x;
+uniform COMPAT_PRECISION float balanced_non_int;
 uniform COMPAT_PRECISION float rotated_stretch_x;
 uniform COMPAT_PRECISION float scanlines_brightness;
 uniform COMPAT_PRECISION float scanlines_width_x;
@@ -100,6 +102,7 @@ uniform COMPAT_PRECISION float scanlines_width_y;
 #define max_crop_y 0.0
 #define max_shrink_x 0.8
 #define max_stretch_x 1.25
+#define balanced_non_int 1.0
 #define rotated_stretch_x 1.0
 #define scanlines_brightness 0.85
 #define scanlines_width_x 0.0
@@ -175,7 +178,7 @@ void main()
     vec2 outPixelSize = inPixelSize / finalScale;
 
     vec2 subpixelDirection = vec2(0.0, 0.0);
-    vec2 blurDirection = clamp(fract(finalScale) * 100.0, vec2(0.01, 0.01), vec2(1.0, 1.0)); // 0 if integer scale and 1 otherwise
+    vec2 blurDirection = clamp(fract(finalScale) * 100.0 * balanced_non_int, vec2(0.01, 0.01), vec2(1.0, 1.0)); // 0 if integer scale and 1 otherwise
     if (subpixel_config == 1.0) {
         subpixelDirection = vec2(-0.333333333, 0.0) * outPixelSize;
     } else if (subpixel_config == 2.0) {
@@ -393,7 +396,7 @@ void main()
 
     float frame = offscreen_frame >= 2.0 ? frameTV : frameRect;
 
-    if (frame > 1.0) {
+    if (frame > 1.0001) {
         vec3 pix = offScreenTexture(coord);
         FragColor = vec4(pix, 1.0);
         return;
