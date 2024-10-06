@@ -163,7 +163,7 @@ void main()
     vec2 finalScale = vec2(finalScaleX, scaleBaseY);
     vec2 textureScale = 1.00001 * scale1x / finalScale;
 
-    vec2 centerOffset = floor((OutputSize / finalScale - InputSize) * 0.5) / TextureSize;
+    vec2 centerOffset = floor((OutputSize / finalScale - InputSize) * 0.5 + 0.5) / TextureSize;
 
     vec2 scanlinesEnabled = step(vec2(2.0, 2.0), finalScale); // Disable scalnines if scaling is < 2x.
     vec2 scalnineWidthPixels = ceil(vec2(scanlines_width_x, scanlines_width_y) * finalScale) * scanlinesEnabled;
