@@ -1,8 +1,9 @@
-# Generic shader preset for scanlined image stretched to 4/3 display.
+# Specific shader preset for vertical-oriented arcade games to horizontal 4/3 screen with horizontal 2x scale and shrink it vertically.
+# Make images squarish and adds scanline effect.
 
 shaders = 1
 
-shader0 = shaders/integer-scaler-plus.glsl
+shader0 = shaders/integer-scaling-best-attempt.glsl
 filter_linear0 = false
 scale_type0 = viewport
 
@@ -11,11 +12,12 @@ scanlines_brightness = 0.85
 scanlines_width_y = 0.3
 scanlines_width_x = 0.0
 fract_scale_y_config = 4.0
-fract_scale_y_condition = 1.0
+fract_scale_y_condition = 0.0
 max_shrink_x = 0.9
 max_stretch_x = 1.1
 max_crop_x = 0.0
 max_crop_y = 16.0
+rotated_stretch_x = 1.25
 aspect_type = 1.0
 aspect_x = 4.0
 aspect_y = 3.0

@@ -1,18 +1,15 @@
-# Shader preset for dot-matrix displays with square pixels with Game Boy Pocket colored scan lines
+# Generic shader preset for dot-matrix displays with square pixels
 
 shaders = 1
 
-shader0 = shaders/integer-scaler-plus.glsl
+shader0 = shaders/integer-scaling-best-attempt.glsl
 filter_linear0 = false
 scale_type0 = viewport
 
 subpixel_config = 3.0
-scanlines_brightness = 0.8
+scanlines_brightness = 0.85
 scanlines_width_y = 0.1
 scanlines_width_x = 0.1
-scanlines_color_r = 0.71
-scanlines_color_g = 0.75
-scanlines_color_b = 0.68
 max_shrink_x = 1.0
 max_stretch_x = 1.0
 aspect_type = 0.0

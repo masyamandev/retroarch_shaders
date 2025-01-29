@@ -2,12 +2,12 @@
 
 Here is a glsl shader for RetroArch. It was built for an Anbernic RG ARC handheld device, but it might be used on other devices too. Some config changes might be required.
 
-# Shader integer-scaler-plus
+# Shader integer-scaling-best-attempt
 
 Integer scaling provides a crisp and clear picture, especially for 8 and 16 bits systems. However, for some systems it leads to wrong aspect ratio,
 e.g. scaling SNES games in 256x224 to 640x480 display will be either blurry or shrunk horizontally. To make it even worse, some systems have
 multiple resolutions supported, e.g. some games for Sega Genesis switch between 320x224 and 256x224 modes. This makes it hard to tune shaders for
-both for crisp picture and correct aspect ratio. That's where integer-scaler-plus can help.
+both for crisp picture and correct aspect ratio. That's where integer-scaling-best-attempt can help.
 
 The simplified algorithm is the following:
 1. Do vertical integer scale as much as it can. E.g. 224px height will be scaled 2x to 448.
@@ -55,11 +55,11 @@ The steps are the following:
 
 (1) Expected file structure after step 4 should be:
 ```
-/usr/share/anbernic/shaders/integer-scaler-plus/shaders/integer-scaler-plus.glsl
-/usr/share/anbernic/shaders/integer-scaler-plus/integer-scaler-plus.glslp
-/usr/share/anbernic/shaders/integer-scaler-plus/integer-scaler-plus-dotmatrix-1x1.glslp
+/usr/share/anbernic/shaders/integer-scaling-best-attempt/shaders/integer-scaling-best-attempt.glsl
+/usr/share/anbernic/shaders/integer-scaling-best-attempt/integer-scaling-best-attempt.glslp
+/usr/share/anbernic/shaders/integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-1x1.glslp
 ...
-/usr/share/anbernic/shaders/integer-scaler-plus/integer-scaler-plus-scanlines-full.glslp
+/usr/share/anbernic/shaders/integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-full.glslp
 ```
 
 You'll have to repeat steps 6-8 for each new game you load and steps 3-8 after reboot.
@@ -80,7 +80,7 @@ Permanent installation is baking a temporary installation into a squashfs. To do
 10. Replace original file `/boot/anbernic` from `ANBERNIC` volume with a created one on the previous step.
 11. Unmount SD card and insert it to your device.
 12. Switch on the device. It should boot Linux as usual.
-13. Go to RetroArch, press Start, Game Settings. Set Game Ratio to `4/3`, Integer Scale to `AUTO`, Shader set to `INTEGER-SCALER-PLUS`, Decoration to `NONE`.
+13. Go to RetroArch, press Start, Game Settings. Set Game Ratio to `4/3`, Integer Scale to `AUTO`, Shader set to `INTEGER-SCALER-BEST-ATTEMPT`, Decoration to `NONE`.
 14. You're done. Enjoy.
 
 # Known issues

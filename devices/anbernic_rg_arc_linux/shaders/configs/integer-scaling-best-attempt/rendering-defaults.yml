@@ -1,0 +1,114 @@
+## Integer scale when possible
+default:
+  # shader affects retroarch shaders
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+  # scanline affect fba2x
+  scanline: false
+snes:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+nes:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-pxl5x4
+n64:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+gba:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-full
+gb:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl1x1-DMG
+gbc:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl1x1
+fds:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-pxl5x4
+virtualboy:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+# Sega
+sg1000:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-pxl1x1
+mastersystem:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-pxl1x1
+megadrive:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+gamegear:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl6x5
+sega32x:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+segacd:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+# Arcade
+neogeo:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+neogeocd:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+mame:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+hbmame:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+fba:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+naomi:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+atomiswave:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+#
+ngp:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl1x1
+ngpc:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl1x1
+gw:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+vectrex:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+lynx:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl1x1
+lutro:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+wswan:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl1x1
+wswanc:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-dotmatrix-pxl1x1
+pcengine:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+pcenginecd:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+supergrafx:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+atari800:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+atari2600:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+atari5200:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+atari7800:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+prboom:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+psx:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+colecovision:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+# Computers
+c64:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-no-scanlines-scr4x3
+dos:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-no-scanlines-scr4x3
+msx:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+msx1:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+msx2:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+amiga:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-no-scanlines-scr4x3
+amstradcpc:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-no-scanlines-scr4x3
+atarist:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-no-scanlines-scr4x3
+zxspectrum:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+odyssey2:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+zx81:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+pcfx:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-scanlines-scr4x3
+x68000:
+  shader: integer-scaling-best-attempt/integer-scaling-best-attempt-no-scanlines-scr4x3

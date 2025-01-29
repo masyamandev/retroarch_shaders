@@ -1,9 +1,9 @@
 # Fractional scale shader preset for dot-matrix displays with square pixels. Allows to play GBA in 3/2 aspect ratio.
-# Full screen 4/3 mode with incorrect aspect ratio might look slightly better on 640x480 screen with integer-scaler-plus-dotmatrix-full.
+# Full screen 4/3 mode with incorrect aspect ratio might look slightly better on 640x480 screen with integer-scaling-best-attempt-dotmatrix-full.
 
 shaders = 1
 
-shader0 = shaders/integer-scaler-plus.glsl
+shader0 = shaders/integer-scaling-best-attempt.glsl
 filter_linear0 = false
 scale_type0 = viewport
 
